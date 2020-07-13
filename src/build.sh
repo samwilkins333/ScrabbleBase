@@ -5,14 +5,15 @@ pwd
 echo
 
 echo "Removing stale version..."
-rm out/ScrabbleBase/*.class
+rm -rf out/ScrabbleBase/*
 rm out/ScrabbleBase.jar
 echo "Done."
 echo
 
 echo "Recompiling from sources..."
-javac ScrabbleBase/*.java
-mv ScrabbleBase/*.class out/ScrabbleBase
+cp -r ScrabbleBase/* out/ScrabbleBase
+find out/ScrabbleBase -name "*.java" | xargs javac
+find out/ScrabbleBase -name "*.java" | xargs rm
 echo "Done."
 echo
 
