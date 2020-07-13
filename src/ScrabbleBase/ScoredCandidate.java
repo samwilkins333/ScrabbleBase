@@ -36,7 +36,7 @@ public class ScoredCandidate {
       Tile tile = p.getTile();
       String resolved;
       if (tile.getLetterProxy() != null) {
-        resolved = String.format("%s(*)", tile.getLetterProxy());
+        resolved = String.format("(%s*)", tile.getLetterProxy());
       } else {
         resolved = String.valueOf(tile.getLetter());
       }
