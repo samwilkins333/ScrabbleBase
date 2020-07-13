@@ -1,3 +1,4 @@
+#!/bin/bash
 cd ./out || exit
 echo "Removing stale version..."
 rm ScrabbleBase.jar
