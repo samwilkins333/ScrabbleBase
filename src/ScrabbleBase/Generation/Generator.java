@@ -5,6 +5,7 @@ import ScrabbleBase.Board.Location.Coordinates;
 import ScrabbleBase.Board.State.Tile;
 import ScrabbleBase.Board.Location.TilePlacement;
 import ScrabbleBase.Generation.Direction.Direction;
+import ScrabbleBase.Generation.Exception.*;
 import ScrabbleBase.Vocabulary.Alphabet;
 import ScrabbleBase.Vocabulary.Trie;
 import ScrabbleBase.Vocabulary.TrieNode;
@@ -32,58 +33,91 @@ public class Generator {
 
   public List<ScoredCandidate> computeAllCandidates(LinkedList<Tile> rack, BoardStateUnit[][] played, int movesMade)
   {
-    if (this.root == null) {
-      throw new NullRootException();
-    }
-    if (this.rackCapacity == null) {
-      throw new NullRackCapacityException();
-    }
+    int dimensions = this.validateInput(rack, played, movesMade);
+
     List<ScoredCandidate> all = new ArrayList<>();
-    Set<String> unique = new HashSet<>();
+    if (rack.size() > 0) {
+      Set<String> unique = new HashSet<>();
 
-    java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
-      for (Direction d : Direction.primary) {
-        this.generate(x, y, x, y, rack, new LinkedList<>(), 0, all, unique, this.root, d, played);
-      }
-    };
+      java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
+        for (Direction d : Direction.primary) {
+          this.generate(x, y, x, y, rack, new LinkedList<>(), 0, all, unique, this.root, d, played);
+        }
+      };
 
-    if (movesMade == 0) {
-      generateAtHook.accept(7, 7);
-    } else {
-      for (int y = 0; y < 15; y++) {
-        for (int x = 0; x < 15; x++) {
-          if (played[y][x].getTile() == null) {
-            for (Direction d : Direction.all) {
-              if (d.nextTile(x, y, played) != null) {
-                generateAtHook.accept(x, y);
-                break;
+      if (movesMade == 0) {
+        int midpoint = dimensions / 2;
+        generateAtHook.accept(midpoint, midpoint);
+      } else {
+        for (int y = 0; y < dimensions; y++) {
+          for (int x = 0; x < dimensions; x++) {
+            if (played[y][x].getTile() == null) {
+              for (Direction d : Direction.all) {
+                if (d.nextTile(x, y, played) != null) {
+                  generateAtHook.accept(x, y);
+                  break;
+                }
               }
             }
           }
         }
       }
+
+      all.sort((one, two) -> {
+        int scoreDiff = two.getScore() - one.getScore();
+        if (scoreDiff != 0) {
+          return scoreDiff;
+        }
+        StringBuilder oneSerialized = new StringBuilder();
+        for (TilePlacement placement : one.getPlacements()) {
+          oneSerialized.append(placement.getTile().getResolvedLetter());
+        }
+        StringBuilder twoSerialized = new StringBuilder();
+        for (TilePlacement placement : two.getPlacements()) {
+          twoSerialized.append(placement.getTile().getResolvedLetter());
+        }
+        int serializedDiff = oneSerialized.toString().compareTo(twoSerialized.toString());
+        if (serializedDiff != 0) {
+          return serializedDiff;
+        }
+        return one.getDirection().name().compareTo(two.getDirection().name());
+      });
     }
 
-    all.sort((one, two) -> {
-      int scoreDiff = two.getScore() - one.getScore();
-      if (scoreDiff != 0) {
-        return scoreDiff;
-      }
-      StringBuilder oneSerialized = new StringBuilder();
-      for (TilePlacement placement : one.getPlacements()) {
-        oneSerialized.append(placement.getTile().getResolvedLetter());
-      }
-      StringBuilder twoSerialized = new StringBuilder();
-      for (TilePlacement placement : two.getPlacements()) {
-        twoSerialized.append(placement.getTile().getResolvedLetter());
-      }
-      int serializedDiff = oneSerialized.toString().compareTo(twoSerialized.toString());
-      if (serializedDiff != 0) {
-        return serializedDiff;
-      }
-      return one.getDirection().name().compareTo(two.getDirection().name());
-    });
     return all;
+  }
+
+  private int validateInput(LinkedList<Tile> rack, BoardStateUnit[][] played, int movesMade)
+          throws UnsetRootException, UnsetRackCapacityException, InvalidMovesMadeException,
+          InvalidBoardStateException, InvalidRackLengthException
+  {
+    if (this.root == null) {
+      throw new UnsetRootException();
+    }
+    if (this.rackCapacity == null) {
+      throw new UnsetRackCapacityException();
+    }
+    if (movesMade < 0) {
+      throw new InvalidMovesMadeException();
+    }
+    int dimensions = played.length;
+    if (dimensions < 3 || dimensions % 2 == 0) {
+      throw new InvalidBoardStateException();
+    }
+    for (BoardStateUnit[] minor : played) {
+      if (minor.length != dimensions) {
+        throw new InvalidBoardStateException();
+      }
+      for (BoardStateUnit unit : minor) {
+        if (unit == null) {
+          throw new InvalidBoardStateException();
+        }
+      }
+    }
+    if (rack.size() > this.rackCapacity) {
+      throw new InvalidRackLengthException(this.rackCapacity, rack.size());
+    }
+    return dimensions;
   }
 
   private void generate(
