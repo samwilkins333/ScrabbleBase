@@ -1,4 +1,4 @@
-package ScrabbleBase.Generation;
+package ScrabbleBase.Generation.Objects;
 
 import ScrabbleBase.Generation.Direction.DirectionName;
 
