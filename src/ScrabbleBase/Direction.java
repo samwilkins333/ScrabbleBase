@@ -9,6 +9,7 @@ public class Direction {
   public static final Direction LEFT = new Direction(-1, 0, DirectionName.LEFT);
   public static final Direction RIGHT = new Direction(1, 0, DirectionName.RIGHT);
   public static final Direction[] all = new Direction[] { Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT };
+  public static final Direction[] primary = new Direction[] { Direction.RIGHT, Direction.DOWN };
 
   private final int xInc;
   private final int yInc;

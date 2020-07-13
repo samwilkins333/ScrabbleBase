@@ -27,8 +27,9 @@ public class Generator {
     Set<String> unique = new HashSet<>();
 
     java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
-      this.generate(x, y, x, y, rack, new LinkedList<>(), 0, all, unique, this.root, Direction.RIGHT, played);
-      this.generate(x, y, x, y, rack, new LinkedList<>(), 0, all, unique, this.root, Direction.DOWN, played);
+      for (Direction d : Direction.primary) {
+        this.generate(x, y, x, y, rack, new LinkedList<>(), 0, all, unique, this.root, d, played);
+      }
     };
 
     if (movesMade == 0) {
@@ -36,7 +37,14 @@ public class Generator {
     } else {
       for (int y = 0; y < 15; y++) {
         for (int x = 0; x < 15; x++) {
-          generateAtHook.accept(x, y);
+          if (played[y][x].getTile() == null) {
+            for (Direction d : Direction.all) {
+              if (d.nextTile(x, y, played) != null) {
+                generateAtHook.accept(x, y);
+                break;
+              }
+            }
+          }
         }
       }
     }
