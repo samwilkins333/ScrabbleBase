@@ -5,8 +5,8 @@ pwd
 echo
 
 echo "Removing stale artifacts..."
-rm -rf out/ScrabbleBase/*
-rm out/ScrabbleBase.jar
+rm -rf out
+mkdir out out/ScrabbleBase
 echo "Done."
 echo
 
