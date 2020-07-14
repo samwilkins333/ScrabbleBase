@@ -1,9 +1,9 @@
 package ScrabbleBase.Generation;
 
-import ScrabbleBase.Board.State.BoardStateUnit;
 import ScrabbleBase.Board.Location.Coordinates;
-import ScrabbleBase.Board.State.Tile;
 import ScrabbleBase.Board.Location.TilePlacement;
+import ScrabbleBase.Board.State.BoardStateUnit;
+import ScrabbleBase.Board.State.Tile;
 import ScrabbleBase.Generation.Direction.Direction;
 import ScrabbleBase.Generation.Exception.*;
 import ScrabbleBase.Generation.Objects.EnrichedTilePlacement;
@@ -132,24 +132,26 @@ public class Generator {
     Direction i = d.inverse();
     TrieNode childNode;
 
-    java.util.function.BiConsumer<TrieNode, Integer> evaluateAndProceed = (child, accumulatedScore) -> {
+    java.util.function.BiConsumer<TrieNode, Integer> evaluateAndProceed = (child, score) -> {
+      int totalScore;
       if (child.getTerminal() && d.nextTile(x, y, played) == null) {
-        int scored;
-        if ((scored = this.applyScorer(played, placed, accumulatedScore)) > 0) {
-          List<TilePlacement> placements = placed.stream().map(EnrichedTilePlacement::getRoot).collect(Collectors.toList());
-          SerializationResult result = this.contextSerialize(placements, d);
-          if (!unique.contains(result.getSerialized())) {
-            unique.add(result.getSerialized());
-            all.add(new ScoredCandidate(placements, result.getNormalized(), scored));
+        if ((d.equals(Direction.LEFT) || d.equals(Direction.UP)) || i.nextTile(hX, hY, played) == null) {
+          if ((totalScore = this.applyScorer(played, placed, score)) > 0) {
+            List<TilePlacement> placements = placed.stream().map(EnrichedTilePlacement::getRoot).collect(Collectors.toList());
+            SerializationResult result = this.contextSerialize(placements, d);
+            if (!unique.contains(result.getSerialized())) {
+              unique.add(result.getSerialized());
+              all.add(new ScoredCandidate(placements, result.getNormalized(), totalScore));
+            }
           }
         }
       }
       Coordinates next;
       TrieNode crossAnchor;
       if ((next = d.nextCoordinates(x, y)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, accumulatedScore, all, unique, child, d, played);
+        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, unique, child, d, played);
       } else if ((crossAnchor = child.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, accumulatedScore, all, unique, crossAnchor, i, played);
+        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, unique, crossAnchor, i, played);
       }
     };
 
@@ -168,9 +170,9 @@ public class Generator {
             TrieNode child;
             List<TilePlacement> cross;
             if ((child = node.getChild(letter)) != null && (cross = this.computeCrossWord(x, y, resolvedTile, d, played)) != null) {
-              TilePlacement placement = new TilePlacement(x, y, resolvedTile);
+              TilePlacement root = new TilePlacement(x, y, resolvedTile);
               List<TilePlacement> resolvedCross = cross.size() > 0 ? cross : null;
-              placed.add(new EnrichedTilePlacement(placement, resolvedCross));
+              placed.add(new EnrichedTilePlacement(root, resolvedCross));
               evaluateAndProceed.accept(child, accumulated);
               while (placed.size() > currentPlacedCount) {
                 placed.removeLast();
@@ -302,7 +304,7 @@ public class Generator {
       }
     }
 
-    int total = wordMultiplier * sum;
+    int total = sum * wordMultiplier;
     if (newTiles == this.rackCapacity) {
       total += 50;
     }
