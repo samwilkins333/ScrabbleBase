@@ -25,6 +25,10 @@ public class Tile {
     return letterProxy;
   }
 
+  public void setLetterProxy(Character letterProxy) {
+    this.letterProxy = letterProxy;
+  }
+
   public char getResolvedLetter() {
     return this.letterProxy != null ? this.letterProxy : this.letter;
   }
