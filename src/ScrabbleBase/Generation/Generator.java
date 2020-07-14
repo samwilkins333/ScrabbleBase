@@ -137,7 +137,10 @@ public class Generator {
       if (child.getTerminal() && d.nextTile(x, y, played) == null) {
         if ((d.equals(Direction.LEFT) || d.equals(Direction.UP)) || i.nextTile(hX, hY, played) == null) {
           if ((totalScore = this.applyScorer(played, placed, score)) > 0) {
-            List<TilePlacement> placements = placed.stream().map(EnrichedTilePlacement::getRoot).collect(Collectors.toList());
+            List<TilePlacement> placements = new ArrayList<>();
+            for (EnrichedTilePlacement placement : placed) {
+              placements.add(placement.getRoot());
+            }
             SerializationResult result = this.contextSerialize(placements, d);
             if (!unique.contains(result.getSerialized())) {
               unique.add(result.getSerialized());
@@ -275,12 +278,13 @@ public class Generator {
   {
     Direction normalized = direction.normalize();
     placements.sort(Direction.along(normalized));
-    String serialized = placements.stream().map(p -> {
-      Tile tile = p.getTile();
+    List<String> fragments = new ArrayList<>();
+    for (TilePlacement placement : placements) {
+      Tile tile = placement.getTile();
       String resolved =  tile.getLetterProxy() != null ? String.valueOf(tile.getLetterProxy()) : "";
-      return String.format("%s:%c%d,%d", resolved, tile.getLetter(), p.getX(), p.getY());
-    }).collect(Collectors.joining(","));
-    return new SerializationResult(serialized, normalized.name());
+      fragments.add(String.format("%s:%c%d,%d", resolved, tile.getLetter(), placement.getX(), placement.getY()));
+    }
+    return new SerializationResult(String.join(",", fragments), normalized.name());
   }
 
   private int computeScoreOf(BoardStateUnit[][] played, List<TilePlacement> placements, int sum)
