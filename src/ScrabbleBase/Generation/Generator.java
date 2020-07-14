@@ -14,7 +14,6 @@ import ScrabbleBase.Vocabulary.Trie;
 import ScrabbleBase.Vocabulary.TrieNode;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Contains logic for exhaustive move generation
@@ -34,9 +33,9 @@ public class Generator {
     this.rackCapacity = rackCapacity;
   }
 
-  public List<ScoredCandidate> computeAllCandidates(LinkedList<Tile> rack, BoardStateUnit[][] played, int movesMade)
+  public List<ScoredCandidate> computeAllCandidates(LinkedList<Tile> rack, BoardStateUnit[][] played)
   {
-    int dimensions = this.validateInput(rack, played, movesMade);
+    ValidationResult result = this.validateInput(rack, played);
 
     List<ScoredCandidate> all = new ArrayList<>();
     if (rack.size() > 0) {
@@ -48,12 +47,12 @@ public class Generator {
         }
       };
 
-      if (movesMade == 0) {
-        int midpoint = dimensions / 2;
+      if (result.existingTileCount == 0) {
+        int midpoint = result.dimensions / 2;
         generateAtHook.accept(midpoint, midpoint);
       } else {
-        for (int y = 0; y < dimensions; y++) {
-          for (int x = 0; x < dimensions; x++) {
+        for (int y = 0; y < result.dimensions; y++) {
+          for (int x = 0; x < result.dimensions; x++) {
             if (played[y][x].getTile() == null) {
               for (Direction d : Direction.all) {
                 if (d.nextTile(x, y, played) != null) {
@@ -90,8 +89,8 @@ public class Generator {
     return all;
   }
 
-  private int validateInput(LinkedList<Tile> rack, BoardStateUnit[][] played, int movesMade)
-          throws UnsetRootException, UnsetRackCapacityException, InvalidMovesMadeException,
+  private ValidationResult validateInput(LinkedList<Tile> rack, BoardStateUnit[][] played)
+          throws UnsetRootException, UnsetRackCapacityException,
           InvalidBoardStateException, InvalidRackLengthException
   {
     if (this.root == null) {
@@ -100,13 +99,11 @@ public class Generator {
     if (this.rackCapacity == null) {
       throw new UnsetRackCapacityException();
     }
-    if (movesMade < 0) {
-      throw new InvalidMovesMadeException();
-    }
     int dimensions = played.length;
     if (dimensions < 3 || dimensions % 2 == 0) {
       throw new InvalidBoardStateException();
     }
+    int existingTileCount = 0;
     for (BoardStateUnit[] minor : played) {
       if (minor.length != dimensions) {
         throw new InvalidBoardStateException();
@@ -115,12 +112,27 @@ public class Generator {
         if (unit == null) {
           throw new InvalidBoardStateException();
         }
+        if (unit.getTile() != null) {
+          existingTileCount++;
+        }
       }
     }
     if (rack.size() > this.rackCapacity) {
       throw new InvalidRackLengthException(this.rackCapacity, rack.size());
     }
-    return dimensions;
+    return new ValidationResult(dimensions, existingTileCount);
+  }
+
+  private static class ValidationResult {
+
+    private final int dimensions;
+    private final int existingTileCount;
+
+    public ValidationResult(int dimensions, int existingTileCount) {
+      this.dimensions = dimensions;
+      this.existingTileCount = existingTileCount;
+    }
+
   }
 
   private void generate(
