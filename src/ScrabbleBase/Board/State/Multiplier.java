@@ -1,5 +1,7 @@
 package ScrabbleBase.Board.State;
 
+import java.util.Objects;
+
 public class Multiplier {
   private final int letter;
   private final int word;
@@ -20,6 +22,23 @@ public class Multiplier {
 
   public int getWordValue() {
     return word;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Multiplier that = (Multiplier) o;
+    return that.letter == letter && that.word == word;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(letter, word);
   }
 
   @Override
