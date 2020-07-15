@@ -3,7 +3,7 @@ package ScrabbleBase.Board.State;
 public class BoardStateUnit {
 
   private final Multiplier multiplier;
-  private final Tile tile;
+  private Tile tile;
 
   public BoardStateUnit(Multiplier multiplier, Tile tile) {
     this.multiplier = multiplier;
@@ -16,6 +16,10 @@ public class BoardStateUnit {
 
   public Tile getTile() {
     return tile;
+  }
+
+  public void setTile(Tile tile) {
+    this.tile = tile;
   }
 
 }

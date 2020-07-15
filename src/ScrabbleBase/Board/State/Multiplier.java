@@ -21,6 +21,11 @@ public class Multiplier {
     this.word = word;
   }
 
+  public Multiplier() {
+    this.letter = 1;
+    this.word = 1;
+  }
+
   /**
    * A utility constructor that is used to split
    * two numbers along the specified delimiter

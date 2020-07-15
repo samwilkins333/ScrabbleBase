@@ -109,7 +109,7 @@ public class Generator {
         throw new InvalidBoardStateException();
       }
       for (BoardStateUnit unit : minor) {
-        if (unit == null) {
+        if (unit == null || unit.getMultiplier() == null) {
           throw new InvalidBoardStateException();
         }
         if (unit.getTile() != null) {
