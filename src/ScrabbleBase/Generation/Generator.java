@@ -43,7 +43,7 @@ public class Generator {
 
       java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
         for (Direction d : Direction.primary) {
-          this.generate(x, y, x, y, rack, new LinkedList<>(), 0, all, unique, this.root, d, played);
+          this.generate(x, y, x, y, rack, new LinkedList<>(), 0, all, unique, this.root, d, played, result.dimensions);
         }
       };
 
@@ -138,7 +138,7 @@ public class Generator {
   private void generate(
           int hX, int hY, int x, int y, LinkedList<Tile> rack, LinkedList<EnrichedTilePlacement> placed,
           final int accumulated, List<ScoredCandidate> all, Set<String> unique, TrieNode node,
-          Direction d, BoardStateUnit[][] played)
+          Direction d, BoardStateUnit[][] played, int dimensions)
   {
     Tile tile = played[y][x].getTile();
     Direction i = d.inverse();
@@ -163,10 +163,10 @@ public class Generator {
       }
       Coordinates next;
       TrieNode crossAnchor;
-      if ((next = d.nextCoordinates(x, y)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, unique, child, d, played);
-      } else if ((crossAnchor = child.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, unique, crossAnchor, i, played);
+      if ((next = d.nextCoordinates(x, y, played.length)) != null) {
+        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, unique, child, d, played, dimensions);
+      } else if ((crossAnchor = child.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY, dimensions)) != null) {
+        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, unique, crossAnchor, i, played, dimensions);
       }
     };
 
@@ -214,8 +214,8 @@ public class Generator {
 
       TrieNode crossAnchor;
       Coordinates next;
-      if (currentPlacedCount > 0 && (crossAnchor = node.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, accumulated, all, unique, crossAnchor, i, played);
+      if (currentPlacedCount > 0 && (crossAnchor = node.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY, dimensions)) != null) {
+        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, accumulated, all, unique, crossAnchor, i, played, dimensions);
       }
     } else if (node != null && (childNode = node.getChild(tile.getResolvedLetter())) != null) {
       evaluateAndProceed.accept(childNode, accumulated + tile.getScore());

@@ -37,16 +37,16 @@ public class Direction {
   public TilePlacement nextTile(int x, int y, BoardStateUnit[][] played) {
     Coordinates next;
     Tile tile;
-    if ((next = this.nextCoordinates(x, y)) != null && (tile = played[next.getY()][next.getX()].getTile()) != null) {
+    if ((next = this.nextCoordinates(x, y, played.length)) != null && (tile = played[next.getY()][next.getX()].getTile()) != null) {
       return new TilePlacement(next.getX(), next.getY(), tile);
     }
     return null;
   }
 
-  public Coordinates nextCoordinates(int x, int y) {
+  public Coordinates nextCoordinates(int x, int y, int dimensions) {
     int nX = this.nX(x);
     int nY = this.nY(y);
-    if (nX >= 0 && nX < 15 && nY >= 0 && nY < 15) {
+    if (nX >= 0 && nX < dimensions && nY >= 0 && nY < dimensions) {
       return new Coordinates(nX, nY);
     }
     return null;
