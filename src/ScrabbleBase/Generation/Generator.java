@@ -181,7 +181,7 @@ public class Generator {
           Tile toPlace = rack.removeFirst();
 
           java.util.function.BiConsumer<Character, Boolean> tryLetterPlacement = (letter, isBlank) -> {
-            Tile resolvedTile = isBlank ? new Tile(toPlace.getLetter(), toPlace.getScore(), letter) : toPlace;
+            Tile resolvedTile = isBlank ? new Tile(toPlace.getLetter(), toPlace.getValue(), letter) : toPlace;
             TrieNode child;
             List<TilePlacement> cross;
             if ((child = node.getChild(letter)) != null && (cross = this.computeCrossWord(x, y, resolvedTile, d, played)) != null) {
@@ -218,7 +218,7 @@ public class Generator {
         this.generate(hX, hY, next.getX(), next.getY(), rack, placed, accumulated, all, unique, crossAnchor, i, played, dimensions);
       }
     } else if (node != null && (childNode = node.getChild(existingTile.getResolvedLetter())) != null) {
-      evaluateAndProceed.accept(childNode, accumulated + existingTile.getScore());
+      evaluateAndProceed.accept(childNode, accumulated + existingTile.getValue());
     }
   }
 
@@ -311,11 +311,11 @@ public class Generator {
         newTiles++;
       }
       if (state.getMultiplier() == null || state.getTile() != null) {
-        sum += tile.getScore();
+        sum += tile.getValue();
       } else {
         int letterValue = state.getMultiplier().getLetterValue();
         int wordValue = state.getMultiplier().getWordValue();
-        sum += (letterValue * tile.getScore());
+        sum += (letterValue * tile.getValue());
         wordMultiplier *= wordValue;
       }
     }

@@ -3,13 +3,13 @@ package ScrabbleBase.Board.State;
 public class Tile {
 
   private final char letter;
-  private final int score;
+  private final int value;
   private Character letterProxy;
   public static final char BLANK = '*';
 
-  public Tile(char letter, int score, Character letterProxy) {
+  public Tile(char letter, int value, Character letterProxy) {
     this.letter = letter;
-    this.score = score;
+    this.value = value;
     this.letterProxy = letterProxy;
   }
 
@@ -17,8 +17,8 @@ public class Tile {
     return letter;
   }
 
-  public int getScore() {
-    return score;
+  public int getValue() {
+    return value;
   }
 
   public Character getLetterProxy() {
