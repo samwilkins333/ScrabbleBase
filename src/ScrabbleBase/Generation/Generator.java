@@ -140,7 +140,7 @@ public class Generator {
           final int accumulated, List<ScoredCandidate> all, Set<String> unique, TrieNode node,
           Direction d, BoardStateUnit[][] played, int dimensions)
   {
-    Tile tile = played[y][x].getTile();
+    Tile existingTile = played[y][x].getTile();
     Direction i = d.inverse();
     TrieNode childNode;
 
@@ -163,14 +163,14 @@ public class Generator {
       }
       Coordinates next;
       TrieNode crossAnchor;
-      if ((next = d.nextCoordinates(x, y, played.length)) != null) {
+      if ((next = d.nextCoordinates(x, y, dimensions)) != null) {
         this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, unique, child, d, played, dimensions);
       } else if ((crossAnchor = child.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY, dimensions)) != null) {
         this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, unique, crossAnchor, i, played, dimensions);
       }
     };
 
-    if (tile == null) {
+    if (existingTile == null) {
       int currentPlacedCount = placed.size();
       int rackCount = rack.size();
 
@@ -200,7 +200,7 @@ public class Generator {
             visited.add(letter);
             if (letter == Tile.BLANK) {
               char[] alphabet = Alphabet.letters;
-              for (int l = 1; l <= 26; l++) {
+              for (int l = 0; l < 26; l++) {
                 tryLetterPlacement.accept(alphabet[l], true);
               }
             } else {
@@ -217,8 +217,8 @@ public class Generator {
       if (currentPlacedCount > 0 && (crossAnchor = node.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY, dimensions)) != null) {
         this.generate(hX, hY, next.getX(), next.getY(), rack, placed, accumulated, all, unique, crossAnchor, i, played, dimensions);
       }
-    } else if (node != null && (childNode = node.getChild(tile.getResolvedLetter())) != null) {
-      evaluateAndProceed.accept(childNode, accumulated + tile.getScore());
+    } else if (node != null && (childNode = node.getChild(existingTile.getResolvedLetter())) != null) {
+      evaluateAndProceed.accept(childNode, accumulated + existingTile.getScore());
     }
   }
 
