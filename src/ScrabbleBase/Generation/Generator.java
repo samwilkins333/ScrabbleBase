@@ -268,19 +268,17 @@ public class Generator {
 
   private int applyScorer(BoardStateUnit[][] played, List<EnrichedTilePlacement> placements, int accumulated)
   {
-    List<List<TilePlacement>> flattened = new ArrayList<>();
-    flattened.add(new ArrayList<>(placements.size()));
+    List<List<TilePlacement>> crosses = new ArrayList<>();
+    List<TilePlacement> primary = new ArrayList<>(placements.size());
     for (EnrichedTilePlacement placement : placements) {
-      flattened.get(0).add(placement.getRoot());
       if (placement.getCross() != null) {
-        flattened.add(placement.getCross());
+        crosses.add(placement.getCross());
       }
     }
 
-    int sum = 0;
-    for (List<TilePlacement> word : flattened) {
-      sum += this.computeScoreOf(played, word, accumulated);
-      accumulated = 0;
+    int sum = this.computeScoreOf(played, primary, accumulated);
+    for (List<TilePlacement> word : crosses) {
+      sum += this.computeScoreOf(played, word, 0);
     }
 
     return sum;
@@ -299,10 +297,11 @@ public class Generator {
     return new SerializationResult(String.join(",", fragments), normalized.name());
   }
 
-  private int computeScoreOf(BoardStateUnit[][] played, List<TilePlacement> placements, int sum)
+  private int computeScoreOf(BoardStateUnit[][] played, List<TilePlacement> placements, int accumulated)
   {
     int wordMultiplier = 1;
     int newTiles = 0;
+    int sum = accumulated;
 
     for (TilePlacement placement : placements) {
       Tile tile = placement.getTile();
