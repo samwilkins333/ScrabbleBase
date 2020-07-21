@@ -270,7 +270,9 @@ public class Generator {
   {
     List<List<TilePlacement>> crosses = new ArrayList<>();
     List<TilePlacement> primary = new ArrayList<>(placements.size());
+
     for (EnrichedTilePlacement placement : placements) {
+      primary.add(placement.getRoot());
       if (placement.getCross() != null) {
         crosses.add(placement.getCross());
       }
