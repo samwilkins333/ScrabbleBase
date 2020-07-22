@@ -1,5 +1,7 @@
 package ScrabbleBase.Board.State;
 
+import java.util.Objects;
+
 public class Tile {
 
   private final char letter;
@@ -31,6 +33,27 @@ public class Tile {
 
   public char getResolvedLetter() {
     return this.letterProxy != null ? this.letterProxy : this.letter;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Tile tile = (Tile) o;
+    boolean equals = letter == tile.letter &&
+            value == tile.value;
+    if (letterProxy == null && tile.letterProxy == null) {
+      return equals;
+    } else if (letterProxy != null && tile.letterProxy != null) {
+      return equals && letterProxy.equals(tile.letterProxy);
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(letter, value, letterProxy);
   }
 
 }

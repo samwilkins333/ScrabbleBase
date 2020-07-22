@@ -6,6 +6,7 @@ import ScrabbleBase.Generation.Direction.DirectionName;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ScoredCandidate {
 
@@ -29,6 +30,21 @@ public class ScoredCandidate {
 
   public int getScore() {
     return score;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ScoredCandidate that = (ScoredCandidate) o;
+    return score == that.score &&
+            placements.equals(that.placements) &&
+            direction == that.direction;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(placements, direction.name(), score);
   }
 
   @Override

@@ -8,7 +8,6 @@ import ScrabbleBase.Generation.Direction.Direction;
 import ScrabbleBase.Generation.Exception.*;
 import ScrabbleBase.Generation.Objects.EnrichedTilePlacement;
 import ScrabbleBase.Generation.Objects.ScoredCandidate;
-import ScrabbleBase.Generation.Objects.SerializationResult;
 import ScrabbleBase.Vocabulary.Alphabet;
 import ScrabbleBase.Vocabulary.Trie;
 import ScrabbleBase.Vocabulary.TrieNode;
@@ -37,13 +36,15 @@ public class Generator {
   {
     ValidationResult result = this.validateInput(rack, played);
 
-    List<ScoredCandidate> all = new ArrayList<>();
-    if (rack.size() > 0) {
-      Set<String> unique = new HashSet<>();
+    if (rack.size() == 0) {
+      return Collections.emptyList();
+    }
 
-      java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
+    Set<ScoredCandidate> all = new HashSet<>();
+
+    java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
         for (Direction d : Direction.primary) {
-          this.generate(x, y, x, y, rack, new LinkedList<>(), 0, all, unique, this.root, d, played, result.dimensions);
+          this.generate(x, y, x, y, rack, new LinkedList<>(), 0, all, this.root, d, played, result.dimensions);
         }
       };
 
@@ -65,7 +66,9 @@ public class Generator {
         }
       }
 
-      all.sort((one, two) -> {
+      List<ScoredCandidate> collected = new ArrayList<>(all);
+
+      collected.sort((one, two) -> {
         int scoreDiff = two.getScore() - one.getScore();
         if (scoreDiff != 0) {
           return scoreDiff;
@@ -84,9 +87,8 @@ public class Generator {
         }
         return one.getDirection().name().compareTo(two.getDirection().name());
       });
-    }
 
-    return all;
+      return collected;
   }
 
   private ValidationResult validateInput(LinkedList<Tile> rack, BoardStateUnit[][] played)
@@ -137,7 +139,7 @@ public class Generator {
 
   private void generate(
           int hX, int hY, int x, int y, LinkedList<Tile> rack, LinkedList<EnrichedTilePlacement> placed,
-          final int accumulated, List<ScoredCandidate> all, Set<String> unique, TrieNode node,
+          final int accumulated, Set<ScoredCandidate> all, TrieNode node,
           Direction d, BoardStateUnit[][] played, int dimensions)
   {
     Tile existingTile = played[y][x].getTile();
@@ -153,20 +155,18 @@ public class Generator {
             for (EnrichedTilePlacement placement : placed) {
               placements.add(placement.getRoot());
             }
-            SerializationResult result = this.contextSerialize(placements, d);
-            if (!unique.contains(result.getSerialized())) {
-              unique.add(result.getSerialized());
-              all.add(new ScoredCandidate(placements, result.getNormalized(), totalScore));
-            }
+            Direction normalized = d.normalize();
+            placements.sort(Direction.along(normalized));
+            all.add(new ScoredCandidate(placements, normalized.name(), totalScore));
           }
         }
       }
       Coordinates next;
       TrieNode crossAnchor;
       if ((next = d.nextCoordinates(x, y, dimensions)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, unique, child, d, played, dimensions);
+        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, child, d, played, dimensions);
       } else if ((crossAnchor = child.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY, dimensions)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, unique, crossAnchor, i, played, dimensions);
+        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, crossAnchor, i, played, dimensions);
       }
     };
 
@@ -215,7 +215,7 @@ public class Generator {
       TrieNode crossAnchor;
       Coordinates next;
       if (currentPlacedCount > 0 && (crossAnchor = node.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY, dimensions)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, accumulated, all, unique, crossAnchor, i, played, dimensions);
+        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, accumulated, all, crossAnchor, i, played, dimensions);
       }
     } else if (node != null && (childNode = node.getChild(existingTile.getResolvedLetter())) != null) {
       evaluateAndProceed.accept(childNode, accumulated + existingTile.getValue());
@@ -284,19 +284,6 @@ public class Generator {
     }
 
     return sum;
-  }
-
-  private SerializationResult contextSerialize(List<TilePlacement> placements, Direction direction)
-  {
-    Direction normalized = direction.normalize();
-    placements.sort(Direction.along(normalized));
-    List<String> fragments = new ArrayList<>();
-    for (TilePlacement placement : placements) {
-      Tile tile = placement.getTile();
-      String resolved =  tile.getLetterProxy() != null ? String.valueOf(tile.getLetterProxy()) : "";
-      fragments.add(String.format("%s:%c%d,%d", resolved, tile.getLetter(), placement.getX(), placement.getY()));
-    }
-    return new SerializationResult(String.join(",", fragments), normalized.name());
   }
 
   private int computeScoreOf(BoardStateUnit[][] played, List<TilePlacement> placements, int accumulated)
