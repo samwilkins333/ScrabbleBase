@@ -8,7 +8,7 @@ public abstract class TestHarness {
   }
 
   public boolean run() {
-    System.out.printf("Running \"%s\"...", name);
+    System.out.printf("%s...", name);
     this.prepare();
     boolean passed = this.execute();
     System.out.printf("%s.\n", passed ? "Passed" : "Failed");
