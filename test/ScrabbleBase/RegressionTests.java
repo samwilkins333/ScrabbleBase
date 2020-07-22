@@ -14,13 +14,7 @@ public class RegressionTests {
     testHarnesses.add(new TileHashingAndEqualityTest());
 
     System.out.println("\nRunning all regression tests...\n");
-
-    boolean passedAll = true;
-    for (TestHarness testHarness : testHarnesses) {
-      passedAll &= testHarness.run();
-    }
-
-    System.out.printf("\n%s.\n", passedAll ? "All tests passed" : "Some tests failed");
+    System.out.printf("\n%s.\n", testHarnesses.stream().allMatch(TestHarness::run) ? "All tests passed" : "Some tests failed");
   }
 
 }
