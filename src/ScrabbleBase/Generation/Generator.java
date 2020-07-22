@@ -268,7 +268,7 @@ public class Generator {
 
   private int applyScorer(BoardStateUnit[][] played, List<EnrichedTilePlacement> placements, int accumulated)
   {
-    List<List<TilePlacement>> crosses = new ArrayList<>();
+    List<List<TilePlacement>> crosses = new ArrayList<>(placements.size());
     List<TilePlacement> primary = new ArrayList<>(placements.size());
 
     for (EnrichedTilePlacement placement : placements) {
