@@ -3,7 +3,6 @@ package com.swilkins.ScrabbleBase.Generation;
 import com.swilkins.ScrabbleBase.Board.Location.Coordinates;
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import com.swilkins.ScrabbleBase.Board.State.BoardStateUnit;
-import com.swilkins.ScrabbleBase.Board.State.Rack;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
 import com.swilkins.ScrabbleBase.Generation.Direction.Direction;
 import com.swilkins.ScrabbleBase.Generation.Exception.InvalidBoardStateException;
@@ -35,7 +34,7 @@ public class Generator {
     Generator.rackCapacity = rackCapacity;
   }
 
-  public static List<ScoredCandidate> computeAllCandidates(Rack rack, BoardStateUnit[][] board) {
+  public static List<ScoredCandidate> computeAllCandidates(LinkedList<Tile> rack, BoardStateUnit[][] board) {
     ValidationResult result = validateInput(rack, board);
 
     if (rack.size() == 0) {
@@ -95,7 +94,7 @@ public class Generator {
     };
   }
 
-  private static ValidationResult validateInput(Rack rack, BoardStateUnit[][] board)
+  private static ValidationResult validateInput(LinkedList<Tile> rack, BoardStateUnit[][] board)
           throws UnsetRootException, UnsetRackCapacityException,
           InvalidBoardStateException, InvalidRackLengthException {
     if (root == null) {
@@ -141,7 +140,7 @@ public class Generator {
   }
 
   private static void generate(
-          int hX, int hY, int x, int y, Rack rack, LinkedList<EnrichedTilePlacement> placed,
+          int hX, int hY, int x, int y, LinkedList<Tile> rack, LinkedList<EnrichedTilePlacement> placed,
           final int accumulated, Set<ScoredCandidate> all, TrieNode node,
           Direction d, BoardStateUnit[][] board, int dimensions) {
     Tile existingTile = board[y][x].getTile();
