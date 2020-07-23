@@ -4,6 +4,7 @@ import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import com.swilkins.ScrabbleBase.Board.State.BoardStateUnit;
 import com.swilkins.ScrabbleBase.Board.State.Rack;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
+import com.swilkins.ScrabbleBase.Generation.Direction.Direction;
 import com.swilkins.ScrabbleBase.Generation.Direction.DirectionName;
 import com.swilkins.ScrabbleBase.Generation.Objects.ScoredCandidate;
 import com.swilkins.ScrabbleBase.Vocabulary.Alphabet;
@@ -22,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 public class GenerationTests {
   private BoardStateUnit[][] board;
+  private Rack rack;
 
   @BeforeClass
   public static void configureGenerator() {
@@ -31,15 +33,14 @@ public class GenerationTests {
   }
 
   @Before
-  public void configureBoard() {
+  public void configureGame() {
     board = getStandardBoard();
+    rack = new Rack(STANDARD_RACK_CAPACITY);
   }
 
   @Test
   public void highestScoringRegularOpeningMoveTest() {
-    Rack rack = new Rack(STANDARD_RACK_CAPACITY);
-
-    rack.addAllFromLetters(new char[]{'a', 'b', 'o', 'r', 'i', 'd', 'e'});
+    rack.addAllFromLetters("aboride");
 
     List<ScoredCandidate> candidates = Generator.computeAllCandidates(rack, board);
 
@@ -50,13 +51,13 @@ public class GenerationTests {
     assertEquals(24, optimal.getScore());
     assertEquals(DirectionName.DOWN, optimal.getDirection());
 
-    int[] expectedY = new int[]{2, 3, 4, 5, 6, 7};
+    String expectedWord = "abider";
     int[] expectedX = new int[]{7, 7, 7, 7, 7, 7};
-    char[] expectedLetter = new char[]{'a', 'b', 'i', 'd', 'e', 'r'};
+    int[] expectedY = new int[]{2, 3, 4, 5, 6, 7};
 
     for (int i = 0; i < optimal.getPlacements().size(); i++) {
       TilePlacement placement = optimal.getPlacements().get(i);
-      assertEquals(expectedLetter[i], placement.getTile().getLetter());
+      assertEquals(expectedWord.charAt(i), placement.getTile().getLetter());
       assertEquals(expectedX[i], placement.getX());
       assertEquals(expectedY[i], placement.getY());
     }
@@ -64,9 +65,7 @@ public class GenerationTests {
 
   @Test
   public void highestScoringBlankOpeningMoveTest() {
-    Rack rack = new Rack(STANDARD_RACK_CAPACITY);
-
-    rack.addAllFromLetters(new char[]{'s', 'o', 'r', 'd', 'm', 'a'});
+    rack.addAllFromLetters("sordma");
 
     rack.addFromLetter(Tile.BLANK);
     ScoredCandidate computedOptimal = Generator.computeAllCandidates(rack, board).get(0);
@@ -96,11 +95,101 @@ public class GenerationTests {
 
   @Test
   public void shouldNotFindAnyCandidates() {
-    Rack rack = new Rack(STANDARD_RACK_CAPACITY);
-
-    rack.addAllFromLetters(new char[]{'d', 'c', 'z', 'k', 'l', 'm', 'n'});
-
+    rack.addAllFromLetters("dczklmn");
     assertTrue(Generator.computeAllCandidates(rack, board).isEmpty());
+  }
+
+  @Test
+  public void shouldFindCandidatesOnAllBordersRegular() {
+    board[7][7].setTile(getStandardTile('a'));
+    board[7][8].setTile(getStandardTile('a'));
+
+    rack.addAllFromLetters("fnhorsb");
+
+    List<ScoredCandidate> candidates = Generator.computeAllCandidates(rack, board);
+
+    assertEquals(444, candidates.size());
+
+    Direction[] expectedDirection = new Direction[]{
+            Direction.DOWN,
+            Direction.RIGHT,
+            Direction.RIGHT,
+            Direction.RIGHT,
+            Direction.DOWN,
+            Direction.DOWN,
+            Direction.RIGHT,
+            Direction.RIGHT,
+            Direction.DOWN,
+            Direction.DOWN,
+            Direction.DOWN,
+    };
+    String[] expectedWord = new String[]{
+            "fohns",
+            "hf",
+            "h",
+            "b",
+            "fn",
+            "fn",
+            "frosh",
+            "frosh",
+            "born",
+            "sh",
+            "bo",
+    };
+    int[][] expectedX = new int[][]{
+            new int[]{9, 9, 9, 9, 9},
+            new int[]{6, 9},
+            new int[]{9},
+            new int[]{6},
+            new int[]{7, 7},
+            new int[]{8, 8},
+            new int[]{8, 9, 10, 11, 12},
+            new int[]{4, 5, 6, 7, 8},
+            new int[]{6, 6, 6, 6},
+            new int[]{7, 7},
+            new int[]{8, 8},
+    };
+    int[][] expectedY = new int[][]{
+            new int[]{5, 6, 7, 8, 9},
+            new int[]{7, 7},
+            new int[]{7},
+            new int[]{7},
+            new int[]{6, 8},
+            new int[]{6, 8},
+            new int[]{6, 6, 6, 6, 6},
+            new int[]{8, 8, 8, 8, 8},
+            new int[]{7, 8, 9, 10},
+            new int[]{8, 9},
+            new int[]{5, 6},
+    };
+
+    for (int i = 0; i < expectedX.length; i++) {
+      boolean matched = false;
+      for (ScoredCandidate candidate : candidates) {
+        List<TilePlacement> placements = candidate.getPlacements();
+        if (placements.size() != expectedX[i].length) {
+          continue;
+        }
+        int p;
+        for (p = 0; p < placements.size(); p++) {
+          if (candidate.getPlacements().get(p).getX() != expectedX[i][p]) {
+            break;
+          }
+          if (candidate.getPlacements().get(p).getY() != expectedY[i][p]) {
+            break;
+          }
+          if (candidate.getPlacements().get(p).getTile().getResolvedLetter() != expectedWord[i].charAt(p)) {
+            break;
+          }
+        }
+        if (p == placements.size()) {
+          matched = true;
+          assertEquals(expectedDirection[i].name(), candidate.getDirection());
+          break;
+        }
+      }
+      assertTrue(matched);
+    }
   }
 
 }

@@ -28,10 +28,11 @@ public class Rack extends LinkedList<Tile> {
     return super.add(tile);
   }
 
-  public void addAllFromLetters(char[] letters) {
+  public void addAllFromLetters(String letters) {
+    char[] exploded = letters.toCharArray();
     int i;
-    for (i = 0; i < letters.length && size() < capacity; i++) {
-      this.addFromLetter(letters[i]);
+    for (i = 0; i < exploded.length && size() < capacity; i++) {
+      this.addFromLetter(exploded[i]);
     }
   }
 
