@@ -1,0 +1,17 @@
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Board/Location/Coordinates.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Vocabulary/Alphabet.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Generation/Direction/DirectionName.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Generation/Generator.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Generation/Objects/ScoredCandidate.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Board/Location/TilePlacement.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Generation/Exception/UnsetRootException.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Generation/Direction/Direction.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Generation/Exception/InvalidBoardStateException.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Generation/Exception/InvalidRackLengthException.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Vocabulary/Trie.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Board/State/BoardStateUnit.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Board/State/Tile.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Generation/Exception/UnsetRackCapacityException.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Board/State/Multiplier.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Generation/Objects/EnrichedTilePlacement.java
+/Users/swilkinss2012/Documents/GitHub/ScrabbleBase/src/main/java/com/swilkins/ScrabbleBase/Vocabulary/TrieNode.java
