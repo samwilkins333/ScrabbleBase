@@ -19,7 +19,7 @@ public class TrieFactory {
         }
       }
       return trie;
-    } catch (FileNotFoundException e) {
+    } catch (FileNotFoundException | NullPointerException e) {
       throw new InvalidTrieSourceException("Unable to locate dictionary file at", dictionaryPath);
     } catch (IOException e) {
       throw new InvalidTrieSourceException("Encountered error while reading from", dictionaryPath);

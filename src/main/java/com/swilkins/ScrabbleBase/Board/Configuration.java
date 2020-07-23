@@ -46,6 +46,16 @@ public final class Configuration {
     standardTileMapping.put('z', new TileConfiguration(1, 10));
   }
 
+  public static List<Tile> getStandardTileBag() {
+    List<Tile> tileBag = new ArrayList<>();
+    for (Map.Entry<Character, TileConfiguration> entry : standardTileMapping.entrySet()) {
+      for (int i = 0; i < entry.getValue().getFrequency(); i++) {
+        tileBag.add(new Tile(entry.getKey(), entry.getValue().getValue(), null));
+      }
+    }
+    return tileBag;
+  }
+
   public static Tile getStandardTile(char letter) {
     TileConfiguration configuration = standardTileMapping.get(letter);
     if (configuration == null) {
