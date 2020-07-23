@@ -1,7 +1,7 @@
 package com.swilkins.ScrabbleBase.Generation.Objects;
 
-import com.swilkins.ScrabbleBase.Board.State.Tile;
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
+import com.swilkins.ScrabbleBase.Board.State.Tile;
 import com.swilkins.ScrabbleBase.Generation.Direction.DirectionName;
 
 import java.util.ArrayList;

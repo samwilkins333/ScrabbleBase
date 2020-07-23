@@ -1,9 +1,9 @@
 package com.swilkins.ScrabbleBase.Generation.Direction;
 
-import com.swilkins.ScrabbleBase.Board.State.BoardStateUnit;
 import com.swilkins.ScrabbleBase.Board.Location.Coordinates;
-import com.swilkins.ScrabbleBase.Board.State.Tile;
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
+import com.swilkins.ScrabbleBase.Board.State.BoardStateUnit;
+import com.swilkins.ScrabbleBase.Board.State.Tile;
 
 import java.util.Comparator;
 
@@ -13,8 +13,8 @@ public class Direction {
   public static final Direction DOWN = new Direction(0, 1, DirectionName.DOWN);
   public static final Direction LEFT = new Direction(-1, 0, DirectionName.LEFT);
   public static final Direction RIGHT = new Direction(1, 0, DirectionName.RIGHT);
-  public static final Direction[] all = new Direction[] { Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT };
-  public static final Direction[] primary = new Direction[] { Direction.RIGHT, Direction.DOWN };
+  public static final Direction[] all = new Direction[]{Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT};
+  public static final Direction[] primary = new Direction[]{Direction.RIGHT, Direction.DOWN};
 
   private final int xInc;
   private final int yInc;
@@ -34,10 +34,10 @@ public class Direction {
     return y + this.yInc;
   }
 
-  public TilePlacement nextTile(int x, int y, BoardStateUnit[][] played) {
+  public TilePlacement nextTile(int x, int y, BoardStateUnit[][] board) {
     Coordinates next;
     Tile tile;
-    if ((next = this.nextCoordinates(x, y, played.length)) != null && (tile = played[next.getY()][next.getX()].getTile()) != null) {
+    if ((next = this.nextCoordinates(x, y, board.length)) != null && (tile = board[next.getY()][next.getX()].getTile()) != null) {
       return new TilePlacement(next.getX(), next.getY(), tile);
     }
     return null;

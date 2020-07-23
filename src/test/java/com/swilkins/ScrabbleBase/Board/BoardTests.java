@@ -4,7 +4,6 @@ import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
 import com.swilkins.ScrabbleBase.Generation.Direction.DirectionName;
 import com.swilkins.ScrabbleBase.Generation.Objects.ScoredCandidate;
-
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -22,8 +21,8 @@ public class BoardTests {
     ScoredCandidate first, second;
     List<TilePlacement> firstPlacements = new ArrayList<>();
     List<TilePlacement> secondPlacements = new ArrayList<>();
-    char[] letters = { 'a', 'u', Tile.BLANK, 's', 'e', 'r', 'o' };
-    int[] values = { 1, 1, 0, 1, 1, 1, 1 };
+    char[] letters = {'a', 'u', Tile.BLANK, 's', 'e', 'r', 'o'};
+    int[] values = {1, 1, 0, 1, 1, 1, 1};
     int score = 0;
     for (int i = 0; i < letters.length; i++) {
       char letter = letters[i];
