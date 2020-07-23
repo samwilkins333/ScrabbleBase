@@ -103,4 +103,19 @@ public class GenerationTests {
     }
   }
 
+  @Test
+  public void shouldNotFindAnyCandidates() {
+    LinkedList<Tile> rack = new LinkedList<>();
+
+    rack.add(getStandardTile('d'));
+    rack.add(getStandardTile('c'));
+    rack.add(getStandardTile('z'));
+    rack.add(getStandardTile('k'));
+    rack.add(getStandardTile('l'));
+    rack.add(getStandardTile('m'));
+    rack.add(getStandardTile('n'));
+
+    assertEquals(0, Generator.Instance.computeAllCandidates(rack, board).size());
+  }
+
 }
