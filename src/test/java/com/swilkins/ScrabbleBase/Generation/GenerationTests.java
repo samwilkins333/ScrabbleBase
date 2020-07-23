@@ -2,6 +2,7 @@ package com.swilkins.ScrabbleBase.Generation;
 
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import com.swilkins.ScrabbleBase.Board.State.BoardStateUnit;
+import com.swilkins.ScrabbleBase.Board.State.Rack;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
 import com.swilkins.ScrabbleBase.Generation.Direction.DirectionName;
 import com.swilkins.ScrabbleBase.Generation.Objects.ScoredCandidate;
@@ -17,15 +18,16 @@ import java.util.List;
 
 import static com.swilkins.ScrabbleBase.Board.Configuration.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class GenerationTests {
   private BoardStateUnit[][] board;
 
   @BeforeClass
   public static void configureGenerator() {
-    Generator.Instance.setRackCapacity(STANDARD_RACK_CAPACITY);
+    Generator.setRackCapacity(STANDARD_RACK_CAPACITY);
     URL dictionaryPath = GenerationTests.class.getResource("/ospd4.txt");
-    Generator.Instance.setRoot(TrieFactory.loadFrom(dictionaryPath).getRoot());
+    Generator.setRoot(TrieFactory.loadFrom(dictionaryPath).getRoot());
   }
 
   @Before
@@ -35,17 +37,11 @@ public class GenerationTests {
 
   @Test
   public void highestScoringRegularOpeningMoveTest() {
-    LinkedList<Tile> rack = new LinkedList<>();
+    Rack rack = new Rack(STANDARD_RACK_CAPACITY);
 
-    rack.add(getStandardTile('a'));
-    rack.add(getStandardTile('b'));
-    rack.add(getStandardTile('o'));
-    rack.add(getStandardTile('r'));
-    rack.add(getStandardTile('i'));
-    rack.add(getStandardTile('d'));
-    rack.add(getStandardTile('e'));
+    rack.addAllFromLetters(new char[]{'a', 'b', 'o', 'r', 'i', 'd', 'e'});
 
-    List<ScoredCandidate> candidates = Generator.Instance.computeAllCandidates(rack, board);
+    List<ScoredCandidate> candidates = Generator.computeAllCandidates(rack, board);
 
     assertEquals(1040, candidates.size());
 
@@ -68,24 +64,19 @@ public class GenerationTests {
 
   @Test
   public void highestScoringBlankOpeningMoveTest() {
-    LinkedList<Tile> rack = new LinkedList<>();
+    Rack rack = new Rack(STANDARD_RACK_CAPACITY);
 
-    rack.add(getStandardTile('s'));
-    rack.add(getStandardTile('o'));
-    rack.add(getStandardTile('r'));
-    rack.add(getStandardTile('d'));
-    rack.add(getStandardTile('m'));
-    rack.add(getStandardTile('a'));
+    rack.addAllFromLetters(new char[]{'s', 'o', 'r', 'd', 'm', 'a'});
 
-    rack.add(getStandardTile(Tile.BLANK));
-    ScoredCandidate computedOptimal = Generator.Instance.computeAllCandidates(rack, board).get(0);
+    rack.addFromLetter(Tile.BLANK);
+    ScoredCandidate computedOptimal = Generator.computeAllCandidates(rack, board).get(0);
     rack.removeLast();
 
     LinkedList<ScoredCandidate> collector = new LinkedList<>();
 
     for (char letter : Alphabet.letters) {
       rack.add(new Tile(letter, 0, null));
-      collector.add(Generator.Instance.computeAllCandidates(rack, board).get(0));
+      collector.add(Generator.computeAllCandidates(rack, board).get(0));
       rack.removeLast();
     }
     collector.sort(Generator.getDefaultOrdering());
@@ -105,17 +96,11 @@ public class GenerationTests {
 
   @Test
   public void shouldNotFindAnyCandidates() {
-    LinkedList<Tile> rack = new LinkedList<>();
+    Rack rack = new Rack(STANDARD_RACK_CAPACITY);
 
-    rack.add(getStandardTile('d'));
-    rack.add(getStandardTile('c'));
-    rack.add(getStandardTile('z'));
-    rack.add(getStandardTile('k'));
-    rack.add(getStandardTile('l'));
-    rack.add(getStandardTile('m'));
-    rack.add(getStandardTile('n'));
+    rack.addAllFromLetters(new char[]{'d', 'c', 'z', 'k', 'l', 'm', 'n'});
 
-    assertEquals(0, Generator.Instance.computeAllCandidates(rack, board).size());
+    assertTrue(Generator.computeAllCandidates(rack, board).isEmpty());
   }
 
 }

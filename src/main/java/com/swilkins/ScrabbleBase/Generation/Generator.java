@@ -3,6 +3,7 @@ package com.swilkins.ScrabbleBase.Generation;
 import com.swilkins.ScrabbleBase.Board.Location.Coordinates;
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import com.swilkins.ScrabbleBase.Board.State.BoardStateUnit;
+import com.swilkins.ScrabbleBase.Board.State.Rack;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
 import com.swilkins.ScrabbleBase.Generation.Direction.Direction;
 import com.swilkins.ScrabbleBase.Generation.Exception.InvalidBoardStateException;
@@ -23,20 +24,19 @@ import java.util.*;
  */
 public class Generator {
 
-  public static final Generator Instance = new Generator();
-  private TrieNode root = null;
-  private Integer rackCapacity = null;
+  private static TrieNode root = null;
+  private static Integer rackCapacity = null;
 
-  public void setRoot(TrieNode root) {
-    this.root = root;
+  public static void setRoot(TrieNode root) {
+    Generator.root = root;
   }
 
-  public void setRackCapacity(int rackCapacity) {
-    this.rackCapacity = rackCapacity;
+  public static void setRackCapacity(int rackCapacity) {
+    Generator.rackCapacity = rackCapacity;
   }
 
-  public List<ScoredCandidate> computeAllCandidates(LinkedList<Tile> rack, BoardStateUnit[][] board) {
-    ValidationResult result = this.validateInput(rack, board);
+  public static List<ScoredCandidate> computeAllCandidates(Rack rack, BoardStateUnit[][] board) {
+    ValidationResult result = validateInput(rack, board);
 
     if (rack.size() == 0) {
       return Collections.emptyList();
@@ -46,7 +46,7 @@ public class Generator {
 
     java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
       for (Direction d : Direction.primary) {
-        this.generate(x, y, x, y, rack, new LinkedList<>(), 0, all, this.root, d, board, result.dimensions);
+        generate(x, y, x, y, rack, new LinkedList<>(), 0, all, root, d, board, result.dimensions);
       }
     };
 
@@ -95,13 +95,13 @@ public class Generator {
     };
   }
 
-  private ValidationResult validateInput(LinkedList<Tile> rack, BoardStateUnit[][] board)
+  private static ValidationResult validateInput(Rack rack, BoardStateUnit[][] board)
           throws UnsetRootException, UnsetRackCapacityException,
           InvalidBoardStateException, InvalidRackLengthException {
-    if (this.root == null) {
+    if (root == null) {
       throw new UnsetRootException();
     }
-    if (this.rackCapacity == null) {
+    if (rackCapacity == null) {
       throw new UnsetRackCapacityException();
     }
     int dimensions = board.length;
@@ -122,8 +122,8 @@ public class Generator {
         }
       }
     }
-    if (rack.size() > this.rackCapacity) {
-      throw new InvalidRackLengthException(this.rackCapacity, rack.size());
+    if (rack.size() > rackCapacity) {
+      throw new InvalidRackLengthException(rackCapacity, rack.size());
     }
     return new ValidationResult(dimensions, existingTileCount);
   }
@@ -140,8 +140,8 @@ public class Generator {
 
   }
 
-  private void generate(
-          int hX, int hY, int x, int y, LinkedList<Tile> rack, LinkedList<EnrichedTilePlacement> placed,
+  private static void generate(
+          int hX, int hY, int x, int y, Rack rack, LinkedList<EnrichedTilePlacement> placed,
           final int accumulated, Set<ScoredCandidate> all, TrieNode node,
           Direction d, BoardStateUnit[][] board, int dimensions) {
     Tile existingTile = board[y][x].getTile();
@@ -152,7 +152,7 @@ public class Generator {
       int totalScore;
       if (child.getTerminal() && d.nextTile(x, y, board) == null) {
         if ((d.equals(Direction.LEFT) || d.equals(Direction.UP)) || i.nextTile(hX, hY, board) == null) {
-          if ((totalScore = this.applyScorer(board, placed, score)) > 0) {
+          if ((totalScore = applyScorer(board, placed, score)) > 0) {
             List<TilePlacement> placements = new ArrayList<>();
             for (EnrichedTilePlacement placement : placed) {
               placements.add(placement.getRoot());
@@ -166,9 +166,9 @@ public class Generator {
       Coordinates next;
       TrieNode crossAnchor;
       if ((next = d.nextCoordinates(x, y, dimensions)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, child, d, board, dimensions);
+        generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, child, d, board, dimensions);
       } else if ((crossAnchor = child.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY, dimensions)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, crossAnchor, i, board, dimensions);
+        generate(hX, hY, next.getX(), next.getY(), rack, placed, score, all, crossAnchor, i, board, dimensions);
       }
     };
 
@@ -186,7 +186,7 @@ public class Generator {
             Tile resolvedTile = isBlank ? new Tile(toPlace.getLetter(), toPlace.getValue(), letter) : toPlace;
             TrieNode child;
             List<TilePlacement> cross;
-            if ((child = node.getChild(letter)) != null && (cross = this.computeCrossWord(x, y, resolvedTile, d, board)) != null) {
+            if ((child = node.getChild(letter)) != null && (cross = computeCrossWord(x, y, resolvedTile, d, board)) != null) {
               TilePlacement root = new TilePlacement(x, y, resolvedTile);
               List<TilePlacement> resolvedCross = cross.size() > 0 ? cross : null;
               placed.add(new EnrichedTilePlacement(root, resolvedCross));
@@ -216,21 +216,21 @@ public class Generator {
       TrieNode crossAnchor;
       Coordinates next;
       if (currentPlacedCount > 0 && (crossAnchor = node.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY, dimensions)) != null) {
-        this.generate(hX, hY, next.getX(), next.getY(), rack, placed, accumulated, all, crossAnchor, i, board, dimensions);
+        generate(hX, hY, next.getX(), next.getY(), rack, placed, accumulated, all, crossAnchor, i, board, dimensions);
       }
     } else if (node != null && (childNode = node.getChild(existingTile.getResolvedLetter())) != null) {
       evaluateAndProceed.accept(childNode, accumulated + existingTile.getValue());
     }
   }
 
-  private List<TilePlacement> computeCrossWord(int sX, int sY, Tile toPlace, Direction d, BoardStateUnit[][] board) {
+  private static List<TilePlacement> computeCrossWord(int sX, int sY, Tile toPlace, Direction d, BoardStateUnit[][] board) {
     d = d.perpendicular();
     if (d.nextTile(sX, sY, board) == null && d.inverse().nextTile(sX, sY, board) == null) {
       return Collections.emptyList();
     }
     List<TilePlacement> placements = new ArrayList<>();
     Tile tile = toPlace;
-    TrieNode node = this.root;
+    TrieNode node = root;
     int x = sX;
     int y = sY;
     Direction original = d;
@@ -266,7 +266,7 @@ public class Generator {
     return null;
   }
 
-  private int applyScorer(BoardStateUnit[][] board, List<EnrichedTilePlacement> placements, int accumulated) {
+  private static int applyScorer(BoardStateUnit[][] board, List<EnrichedTilePlacement> placements, int accumulated) {
     List<List<TilePlacement>> crosses = new ArrayList<>(placements.size());
     List<TilePlacement> primary = new ArrayList<>(placements.size());
 
@@ -277,15 +277,15 @@ public class Generator {
       }
     }
 
-    int sum = this.computeScoreOf(board, primary, accumulated);
+    int sum = computeScoreOf(board, primary, accumulated);
     for (List<TilePlacement> word : crosses) {
-      sum += this.computeScoreOf(board, word, 0);
+      sum += computeScoreOf(board, word, 0);
     }
 
     return sum;
   }
 
-  private int computeScoreOf(BoardStateUnit[][] board, List<TilePlacement> placements, int accumulated) {
+  private static int computeScoreOf(BoardStateUnit[][] board, List<TilePlacement> placements, int accumulated) {
     int wordMultiplier = 1;
     int newTiles = 0;
     int sum = accumulated;
@@ -307,7 +307,7 @@ public class Generator {
     }
 
     int total = sum * wordMultiplier;
-    if (newTiles == this.rackCapacity) {
+    if (newTiles == rackCapacity) {
       total += 50;
     }
     return total;
