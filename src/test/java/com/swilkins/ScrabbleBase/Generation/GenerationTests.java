@@ -100,7 +100,7 @@ public class GenerationTests {
   }
 
   @Test
-  public void shouldFindCandidatesOnAllBordersRegular() {
+  public void shouldFindCandidatesOnAllBorders() {
     board[7][7].setTile(getStandardTile('a'));
     board[7][8].setTile(getStandardTile('a'));
 
@@ -204,6 +204,83 @@ public class GenerationTests {
       }
       assertTrue(matched);
     }
+  }
+
+  @Test
+  public void shouldFindCandidateSpanningGaps() {
+    board[7][4].setTile(getStandardTile('s'));
+    board[7][5].setTile(getStandardTile('o'));
+    board[7][6].setTile(getStandardTile('o'));
+    board[7][7].setTile(getStandardTile('n'));
+    board[6][7].setTile(getStandardTile('i'));
+    board[5][7].setTile(getStandardTile('o'));
+    board[4][7].setTile(getStandardTile('c'));
+    board[6][4].setTile(getStandardTile('e'));
+    board[5][4].setTile(getStandardTile('l'));
+    board[4][4].setTile(getStandardTile('a'));
+    board[3][4].setTile(getStandardTile('h'));
+    board[2][4].setTile(getStandardTile('s'));
+    board[2][5].setTile(getStandardTile('t'));
+    board[2][6].setTile(getStandardTile('e'));
+    board[2][7].setTile(getStandardTile('a'));
+    board[2][8].setTile(getStandardTile('l'));
+    board[2][9].setTile(getStandardTile('i'));
+    board[2][10].setTile(getStandardTile('n'));
+    board[2][11].setTile(getStandardTile('g'));
+    board[1][9].setTile(getStandardTile('l'));
+    board[3][9].setTile(getStandardTile('a'));
+    board[4][9].setTile(getStandardTile('r'));
+    board[1][10].setTile(getStandardTile('i'));
+    board[1][11].setTile(getStandardTile('a'));
+    board[1][12].setTile(getStandardTile('r'));
+    board[1][13].setTile(getStandardTile('s'));
+    board[2][11].setTile(getStandardTile('g'));
+    board[3][11].setTile(getStandardTile('r'));
+    board[4][11].setTile(getStandardTile('e'));
+    board[5][11].setTile(getStandardTile('e'));
+    board[6][11].setTile(getStandardTile('s'));
+    board[2][13].setTile(getStandardTile('e'));
+    board[3][13].setTile(getStandardTile('e'));
+    board[4][13].setTile(getStandardTile('s'));
+
+    rack.addAllFromLetters("aen");
+
+    List<ScoredCandidate> candidates = Generator.computeAllCandidates(rack, board);
+
+    assertEquals(109, candidates.size());
+
+    String expectedWord = "aen";
+    int[] expectedX = new int[]{8, 10, 12};
+    int[] expectedY = new int[]{4, 4, 4};
+    DirectionName expectedDirection = Direction.RIGHT.name();
+    int expectedScore = 18;
+
+    boolean matched = false;
+    for (ScoredCandidate candidate : candidates) {
+      List<TilePlacement> placements = candidate.getPlacements();
+      if (placements.size() != expectedX.length) {
+        continue;
+      }
+      int p;
+      for (p = 0; p < placements.size(); p++) {
+        if (placements.get(p).getX() != expectedX[p]) {
+          break;
+        }
+        if (placements.get(p).getY() != expectedY[p]) {
+          break;
+        }
+        if (placements.get(p).getTile().getResolvedLetter() != expectedWord.charAt(p)) {
+          break;
+        }
+      }
+      if (p == placements.size()) {
+        matched = true;
+        assertEquals(expectedDirection, candidate.getDirection());
+        assertEquals(expectedScore, candidate.getScore());
+        break;
+      }
+    }
+    assertTrue(matched);
   }
 
 }

@@ -46,6 +46,25 @@ public final class Configuration {
     standardTileMapping.put('z', new TileConfiguration(1, 10));
   }
 
+  public static void logBoard(BoardStateUnit[][] board) {
+    int d = board.length;
+    List<String> indices = new ArrayList<>();
+    indices.add(" ");
+    for (int x = 0; x < d; x++) {
+      indices.add(String.valueOf(x % 10));
+    }
+    System.out.println(String.join( " ", indices));
+    for (int y = 0; y < d; y++) {
+      List<String> letters = new ArrayList<>();
+      letters.add(String.valueOf(y % 10));
+      for (int x = 0; x < d; x++) {
+        Tile played = board[y][x].getTile();
+        letters.add(played != null ? String.valueOf(played.getResolvedLetter()) : "_");
+      }
+      System.out.println(String.join(" ", letters));
+    }
+  }
+
   public static List<Tile> getStandardTileBag() {
     List<Tile> tileBag = new ArrayList<>();
     for (Map.Entry<Character, TileConfiguration> entry : standardTileMapping.entrySet()) {
