@@ -162,6 +162,19 @@ public class GenerationTests {
             new int[]{8, 9},
             new int[]{5, 6},
     };
+    int[] expectedScore = new int[]{
+            27,
+            10,
+            6,
+            5,
+            6,
+            11,
+            28,
+            27,
+            12,
+            6,
+            6,
+    };
 
     for (int i = 0; i < expectedX.length; i++) {
       boolean matched = false;
@@ -185,6 +198,7 @@ public class GenerationTests {
         if (p == placements.size()) {
           matched = true;
           assertEquals(expectedDirection[i].name(), candidate.getDirection());
+          assertEquals(expectedScore[i], candidate.getScore());
           break;
         }
       }
