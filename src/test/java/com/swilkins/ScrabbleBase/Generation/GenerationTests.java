@@ -260,11 +260,11 @@ public class GenerationTests {
     board[3][13].setTile(getStandardTile('e'));
     board[4][13].setTile(getStandardTile('s'));
 
-    rack.addAllFromLetters("aen");
+    rack.addAllFromLetters("aenjpbz");
 
     List<ScoredCandidate> candidates = Generator.computeAllCandidates(rack, board);
 
-    assertEquals(109, candidates.size());
+    assertEquals(330, candidates.size());
 
     String expectedWord = "careens";
     int[] expectedX = new int[]{7, 8, 9, 10, 11, 12, 13};
