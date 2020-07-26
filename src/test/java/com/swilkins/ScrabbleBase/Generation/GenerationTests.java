@@ -125,42 +125,55 @@ public class GenerationTests {
     };
     String[] expectedWord = new String[]{
             "fohns",
-            "hf",
-            "h",
-            "b",
-            "fn",
-            "fn",
+            "haaf",
+            "aah",
+            "baa",
+            "fan",
+            "fan",
             "frosh",
             "frosh",
             "born",
-            "sh",
-            "bo",
+            "ash",
+            "boa",
+    };
+    boolean[][] expectedIsExisting = new boolean[][]{
+            new boolean[]{false, false, false, false, false},
+            new boolean[]{false, true, true, false},
+            new boolean[]{true, true, false},
+            new boolean[]{false, true, true},
+            new boolean[]{false, true, false},
+            new boolean[]{false, true, false},
+            new boolean[]{false, false, false, false, false},
+            new boolean[]{false, false, false, false, false},
+            new boolean[]{false, false, false, false},
+            new boolean[]{true, false, false},
+            new boolean[]{false, false, true}
     };
     int[][] expectedX = new int[][]{
             new int[]{9, 9, 9, 9, 9},
-            new int[]{6, 9},
-            new int[]{9},
-            new int[]{6},
-            new int[]{7, 7},
-            new int[]{8, 8},
+            new int[]{6, 7, 8, 9},
+            new int[]{7, 8, 9},
+            new int[]{6, 7, 8},
+            new int[]{7, 7, 7},
+            new int[]{8, 8, 8},
             new int[]{8, 9, 10, 11, 12},
             new int[]{4, 5, 6, 7, 8},
             new int[]{6, 6, 6, 6},
-            new int[]{7, 7},
-            new int[]{8, 8},
+            new int[]{7, 7, 7},
+            new int[]{8, 8, 8},
     };
     int[][] expectedY = new int[][]{
             new int[]{5, 6, 7, 8, 9},
-            new int[]{7, 7},
-            new int[]{7},
-            new int[]{7},
-            new int[]{6, 8},
-            new int[]{6, 8},
+            new int[]{7, 7, 7, 7},
+            new int[]{7, 7, 7},
+            new int[]{7, 7, 7},
+            new int[]{6, 7, 8},
+            new int[]{6, 7, 8},
             new int[]{6, 6, 6, 6, 6},
             new int[]{8, 8, 8, 8, 8},
             new int[]{7, 8, 9, 10},
-            new int[]{8, 9},
-            new int[]{5, 6},
+            new int[]{7, 8, 9},
+            new int[]{5, 6, 7},
     };
     int[] expectedScore = new int[]{
             27,
@@ -185,13 +198,17 @@ public class GenerationTests {
         }
         int p;
         for (p = 0; p < placements.size(); p++) {
-          if (candidate.getPlacements().get(p).getX() != expectedX[i][p]) {
+          TilePlacement placement = placements.get(p);
+          if (placement.getX() != expectedX[i][p]) {
             break;
           }
-          if (candidate.getPlacements().get(p).getY() != expectedY[i][p]) {
+          if (placement.getY() != expectedY[i][p]) {
             break;
           }
-          if (candidate.getPlacements().get(p).getTile().getResolvedLetter() != expectedWord[i].charAt(p)) {
+          if (placement.getTile().getResolvedLetter() != expectedWord[i].charAt(p)) {
+            break;
+          }
+          if (placement.isExisting() != expectedIsExisting[i][p]) {
             break;
           }
         }
@@ -249,9 +266,10 @@ public class GenerationTests {
 
     assertEquals(109, candidates.size());
 
-    String expectedWord = "aen";
-    int[] expectedX = new int[]{8, 10, 12};
-    int[] expectedY = new int[]{4, 4, 4};
+    String expectedWord = "careens";
+    int[] expectedX = new int[]{7, 8, 9, 10, 11, 12, 13};
+    int[] expectedY = new int[]{4, 4, 4, 4, 4, 4, 4};
+    boolean[] expectedIsExisting = new boolean[]{true, false, true, false, true, false, true};
     DirectionName expectedDirection = Direction.RIGHT.name();
     int expectedScore = 18;
 
@@ -263,13 +281,17 @@ public class GenerationTests {
       }
       int p;
       for (p = 0; p < placements.size(); p++) {
-        if (placements.get(p).getX() != expectedX[p]) {
+        TilePlacement placement = placements.get(p);
+        if (placement.getX() != expectedX[p]) {
           break;
         }
-        if (placements.get(p).getY() != expectedY[p]) {
+        if (placement.getY() != expectedY[p]) {
           break;
         }
-        if (placements.get(p).getTile().getResolvedLetter() != expectedWord.charAt(p)) {
+        if (placement.getTile().getResolvedLetter() != expectedWord.charAt(p)) {
+          break;
+        }
+        if (placement.isExisting() != expectedIsExisting[p]) {
           break;
         }
       }

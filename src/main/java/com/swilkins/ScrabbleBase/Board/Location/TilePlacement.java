@@ -9,11 +9,19 @@ public class TilePlacement {
   private final int x;
   private final int y;
   private final Tile tile;
+  private boolean isExisting = false;
 
   public TilePlacement(int x, int y, Tile tile) {
     this.x = x;
     this.y = y;
     this.tile = tile;
+  }
+
+  public TilePlacement(int x, int y, Tile tile, boolean isExisting) {
+    this.x = x;
+    this.y = y;
+    this.tile = tile;
+    this.isExisting = isExisting;
   }
 
   public int getX() {
@@ -26,6 +34,10 @@ public class TilePlacement {
 
   public Tile getTile() {
     return tile;
+  }
+
+  public boolean isExisting() {
+    return isExisting;
   }
 
   @Override
