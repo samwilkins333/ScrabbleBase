@@ -31,8 +31,8 @@ public class BoardTests {
       firstPlacements.add(new TilePlacement(i, 7, new Tile(letter, value, null)));
       secondPlacements.add(new TilePlacement(i, 7, new Tile(letter, value, null)));
     }
-    first = new ScoredCandidate(firstPlacements, DirectionName.RIGHT, score);
-    second = new ScoredCandidate(secondPlacements, DirectionName.RIGHT, score);
+    first = new ScoredCandidate(firstPlacements, null, DirectionName.RIGHT, score);
+    second = new ScoredCandidate(secondPlacements, null, DirectionName.RIGHT, score);
     Set<ScoredCandidate> collector = new HashSet<>();
     collector.add(first);
     collector.add(second);

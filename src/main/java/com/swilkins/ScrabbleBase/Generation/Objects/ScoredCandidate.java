@@ -11,12 +11,16 @@ import java.util.Objects;
 public class ScoredCandidate {
 
   private final List<TilePlacement> placements;
+  private List<List<TilePlacement>> crosses = null;
   private final DirectionName direction;
   private final int score;
-  private String serialized = null;
+  private List<String> serialized = null;
 
-  public ScoredCandidate(List<TilePlacement> placements, DirectionName direction, int score) {
+  public ScoredCandidate(List<TilePlacement> placements, List<List<TilePlacement>> crosses, DirectionName direction, int score) {
     this.placements = placements;
+    if (crosses != null && !crosses.isEmpty()) {
+      this.crosses = crosses;
+    }
     this.direction = direction;
     this.score = score;
   }
@@ -29,13 +33,27 @@ public class ScoredCandidate {
     return direction;
   }
 
-  public String getSerialized() {
+  public List<List<TilePlacement>> getCrosses() {
+    return crosses;
+  }
+
+  public List<String> getSerialized() {
     if (serialized == null) {
+      serialized = new ArrayList<>();
       StringBuilder builder = new StringBuilder();
       for (TilePlacement placement : placements) {
         builder.append(placement.getTile().getResolvedLetter());
       }
-      serialized = builder.toString();
+      serialized.add(builder.toString());
+      if (crosses != null) {
+        for (List<TilePlacement> cross : crosses) {
+          builder = new StringBuilder();
+          for (TilePlacement placement : cross) {
+            builder.append(placement.getTile().getResolvedLetter());
+          }
+          serialized.add(builder.toString());
+        }
+      }
     }
     return serialized;
   }

@@ -8,10 +8,10 @@ public class TrieNode {
   public static final char ROOT = '@';
   private final char letter;
   private final TrieNode parent;
-  private Boolean isTerminal;
+  private boolean isTerminal;
   private final Map<Character, TrieNode> children;
 
-  public TrieNode(char letter, TrieNode parent, Boolean isTerminal) {
+  public TrieNode(char letter, TrieNode parent, boolean isTerminal) {
     this.letter = letter;
     this.parent = parent;
     this.isTerminal = isTerminal;
@@ -40,7 +40,7 @@ public class TrieNode {
     return parent;
   }
 
-  public Boolean getTerminal() {
+  public boolean getTerminal() {
     return isTerminal;
   }
 

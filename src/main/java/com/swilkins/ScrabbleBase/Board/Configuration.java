@@ -53,7 +53,7 @@ public final class Configuration {
     for (int x = 0; x < d; x++) {
       indices.add(String.valueOf(x % 10));
     }
-    System.out.println(String.join( " ", indices));
+    System.out.println(String.join(" ", indices));
     for (int y = 0; y < d; y++) {
       List<String> letters = new ArrayList<>();
       letters.add(String.valueOf(y % 10));

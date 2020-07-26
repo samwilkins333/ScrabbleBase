@@ -149,14 +149,15 @@ public class Generator {
     java.util.function.Consumer<TrieNode> evaluateAndProceed = child -> {
       if (child.getTerminal() && d.nextTile(x, y, board) == null) {
         if ((d.equals(Direction.LEFT) || d.equals(Direction.UP)) || i.nextTile(hX, hY, board) == null) {
-          int candidateScore = computeCandidateScore(board, placed);
+          List<List<TilePlacement>> crosses = new ArrayList<>();
+          int candidateScore = computeCandidateScore(board, placed, crosses);
           List<TilePlacement> placements = new ArrayList<>();
           for (EnrichedTilePlacement placement : placed) {
             placements.add(placement.getRoot());
           }
           Direction normalized = d.normalize();
           placements.sort(Direction.along(normalized));
-          all.add(new ScoredCandidate(placements, normalized.name(), candidateScore));
+          all.add(new ScoredCandidate(placements, crosses, normalized.name(), candidateScore));
         }
       }
       Coordinates next;
@@ -263,8 +264,7 @@ public class Generator {
     return null;
   }
 
-  private static int computeCandidateScore(BoardStateUnit[][] board, List<EnrichedTilePlacement> placements) {
-    List<List<TilePlacement>> crosses = new ArrayList<>(placements.size());
+  private static int computeCandidateScore(BoardStateUnit[][] board, List<EnrichedTilePlacement> placements, List<List<TilePlacement>> crosses) {
     List<TilePlacement> primary = new ArrayList<>(placements.size());
 
     for (EnrichedTilePlacement placement : placements) {

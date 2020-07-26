@@ -2,13 +2,13 @@ package com.swilkins.ScrabbleBase.Vocabulary;
 
 public class Trie {
 
-  private TrieNode root = new TrieNode(TrieNode.ROOT, null, null);
+  private TrieNode root = new TrieNode(TrieNode.ROOT, null, false);
   private int wordCount = 0;
   private int nodeCount = 0;
   public static final char DELIMITER = '#';
 
   public void clear() {
-    this.root = new TrieNode(TrieNode.ROOT, null, null);
+    this.root = new TrieNode(TrieNode.ROOT, null, false);
   }
 
   public TrieNode getRoot() {
