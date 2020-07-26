@@ -79,11 +79,11 @@ public class Generator {
         return scoreDiff;
       }
       StringBuilder oneSerialized = new StringBuilder();
-      for (TilePlacement placement : one.getPlacements()) {
+      for (TilePlacement placement : one.getPrimary()) {
         oneSerialized.append(placement.getTile().getResolvedLetter());
       }
       StringBuilder twoSerialized = new StringBuilder();
-      for (TilePlacement placement : two.getPlacements()) {
+      for (TilePlacement placement : two.getPrimary()) {
         twoSerialized.append(placement.getTile().getResolvedLetter());
       }
       int serializedDiff = oneSerialized.toString().compareTo(twoSerialized.toString());
@@ -150,14 +150,11 @@ public class Generator {
       if (child.getTerminal() && d.nextTile(x, y, board) == null) {
         if ((d.equals(Direction.LEFT) || d.equals(Direction.UP)) || i.nextTile(hX, hY, board) == null) {
           List<List<TilePlacement>> crosses = new ArrayList<>();
-          int candidateScore = computeCandidateScore(board, placed, crosses);
-          List<TilePlacement> placements = new ArrayList<>();
-          for (EnrichedTilePlacement placement : placed) {
-            placements.add(placement.getRoot());
-          }
+          List<TilePlacement> primary = new ArrayList<>();
+          int candidateScore = computeCandidateScore(board, placed, primary, crosses);
           Direction normalized = d.normalize();
-          placements.sort(Direction.along(normalized));
-          all.add(new ScoredCandidate(placements, crosses, normalized.name(), candidateScore));
+          primary.sort(Direction.along(normalized));
+          all.add(new ScoredCandidate(primary, crosses, normalized.name(), candidateScore));
         }
       }
       Coordinates next;
@@ -264,9 +261,7 @@ public class Generator {
     return null;
   }
 
-  private static int computeCandidateScore(BoardStateUnit[][] board, List<EnrichedTilePlacement> placements, List<List<TilePlacement>> crosses) {
-    List<TilePlacement> primary = new ArrayList<>(placements.size());
-
+  private static int computeCandidateScore(BoardStateUnit[][] board, List<EnrichedTilePlacement> placements, List<TilePlacement> primary, List<List<TilePlacement>> crosses) {
     for (EnrichedTilePlacement placement : placements) {
       primary.add(placement.getRoot());
       if (placement.getCross() != null) {

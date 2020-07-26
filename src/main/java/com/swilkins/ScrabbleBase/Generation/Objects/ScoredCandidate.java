@@ -10,14 +10,14 @@ import java.util.Objects;
 
 public class ScoredCandidate {
 
-  private final List<TilePlacement> placements;
+  private final List<TilePlacement> primary;
   private List<List<TilePlacement>> crosses = null;
   private final DirectionName direction;
   private final int score;
   private List<String> serialized = null;
 
-  public ScoredCandidate(List<TilePlacement> placements, List<List<TilePlacement>> crosses, DirectionName direction, int score) {
-    this.placements = placements;
+  public ScoredCandidate(List<TilePlacement> primary, List<List<TilePlacement>> crosses, DirectionName direction, int score) {
+    this.primary = primary;
     if (crosses != null && !crosses.isEmpty()) {
       this.crosses = crosses;
     }
@@ -25,8 +25,8 @@ public class ScoredCandidate {
     this.score = score;
   }
 
-  public List<TilePlacement> getPlacements() {
-    return placements;
+  public List<TilePlacement> getPrimary() {
+    return primary;
   }
 
   public DirectionName getDirection() {
@@ -41,7 +41,7 @@ public class ScoredCandidate {
     if (serialized == null) {
       serialized = new ArrayList<>();
       StringBuilder builder = new StringBuilder();
-      for (TilePlacement placement : placements) {
+      for (TilePlacement placement : primary) {
         builder.append(placement.getTile().getResolvedLetter());
       }
       serialized.add(builder.toString());
@@ -68,20 +68,20 @@ public class ScoredCandidate {
     if (o == null || getClass() != o.getClass()) return false;
     ScoredCandidate that = (ScoredCandidate) o;
     return score == that.score &&
-            placements.equals(that.placements) &&
+            primary.equals(that.primary) &&
             direction == that.direction;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(placements, direction.name(), score);
+    return Objects.hash(primary, direction.name(), score);
   }
 
   @Override
   public String toString() {
     StringBuilder word = new StringBuilder();
     List<String> locations = new ArrayList<>();
-    for (TilePlacement p : this.placements) {
+    for (TilePlacement p : this.primary) {
       Tile tile = p.getTile();
       String resolved;
       if (tile.getLetterProxy() != null) {

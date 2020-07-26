@@ -55,8 +55,8 @@ public class GenerationTests {
     int[] expectedX = new int[]{7, 7, 7, 7, 7, 7};
     int[] expectedY = new int[]{2, 3, 4, 5, 6, 7};
 
-    for (int i = 0; i < optimal.getPlacements().size(); i++) {
-      TilePlacement placement = optimal.getPlacements().get(i);
+    for (int i = 0; i < optimal.getPrimary().size(); i++) {
+      TilePlacement placement = optimal.getPrimary().get(i);
       assertEquals(expectedWord.charAt(i), placement.getTile().getLetter());
       assertEquals(expectedX[i], placement.getX());
       assertEquals(expectedY[i], placement.getY());
@@ -81,12 +81,12 @@ public class GenerationTests {
     collector.sort(Generator.getDefaultOrdering());
 
     ScoredCandidate collectedOptimal = collector.get(0);
-    assertEquals(computedOptimal.getPlacements().size(), collectedOptimal.getPlacements().size());
+    assertEquals(computedOptimal.getPrimary().size(), collectedOptimal.getPrimary().size());
     assertEquals(computedOptimal.getDirection(), collectedOptimal.getDirection());
     assertEquals(computedOptimal.getScore(), collectedOptimal.getScore());
-    for (int i = 0; i < computedOptimal.getPlacements().size(); i++) {
-      TilePlacement computed = computedOptimal.getPlacements().get(i);
-      TilePlacement collected = collectedOptimal.getPlacements().get(i);
+    for (int i = 0; i < computedOptimal.getPrimary().size(); i++) {
+      TilePlacement computed = computedOptimal.getPrimary().get(i);
+      TilePlacement collected = collectedOptimal.getPrimary().get(i);
       assertEquals(computed.getTile().getResolvedLetter(), collected.getTile().getResolvedLetter());
       assertEquals(computed.getX(), collected.getX());
       assertEquals(computed.getY(), collected.getY());
@@ -192,7 +192,7 @@ public class GenerationTests {
     for (int i = 0; i < expectedX.length; i++) {
       boolean matched = false;
       for (ScoredCandidate candidate : candidates) {
-        List<TilePlacement> placements = candidate.getPlacements();
+        List<TilePlacement> placements = candidate.getPrimary();
         if (placements.size() != expectedX[i].length) {
           continue;
         }
@@ -275,7 +275,7 @@ public class GenerationTests {
 
     boolean matched = false;
     for (ScoredCandidate candidate : candidates) {
-      List<TilePlacement> placements = candidate.getPlacements();
+      List<TilePlacement> placements = candidate.getPrimary();
       if (placements.size() != expectedX.length) {
         continue;
       }
