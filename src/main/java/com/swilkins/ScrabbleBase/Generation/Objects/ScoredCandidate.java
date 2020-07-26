@@ -55,12 +55,16 @@ public class ScoredCandidate {
       Tile tile = p.getTile();
       String resolved;
       if (tile.getLetterProxy() != null) {
-        resolved = String.format("(%s*)", tile.getLetterProxy());
+        resolved = String.format("{%s*}", tile.getLetterProxy());
       } else {
         resolved = String.valueOf(tile.getLetter());
       }
       word.append(resolved);
-      locations.add(String.format("%s(%d, %d)", resolved, p.getX(), p.getY()));
+      String placementString = String.format("%s", resolved);
+      if (!p.isExisting()) {
+        placementString = String.format("%s(%s, %s)", placementString, p.getX(), p.getY());
+      }
+      locations.add(placementString);
     }
     return word + " (" + this.score + ") @ [" + String.join(", ", locations) + "] " + this.direction.name();
   }
