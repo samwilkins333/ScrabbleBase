@@ -13,6 +13,7 @@ public class ScoredCandidate {
   private final List<TilePlacement> placements;
   private final DirectionName direction;
   private final int score;
+  private String serialized = null;
 
   public ScoredCandidate(List<TilePlacement> placements, DirectionName direction, int score) {
     this.placements = placements;
@@ -26,6 +27,17 @@ public class ScoredCandidate {
 
   public DirectionName getDirection() {
     return direction;
+  }
+
+  public String getSerialized() {
+    if (serialized == null) {
+      StringBuilder builder = new StringBuilder();
+      for (TilePlacement placement : placements) {
+        builder.append(placement.getTile().getResolvedLetter());
+      }
+      serialized = builder.toString();
+    }
+    return serialized;
   }
 
   public int getScore() {
