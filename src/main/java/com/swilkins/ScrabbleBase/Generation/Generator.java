@@ -21,7 +21,6 @@ import static com.swilkins.ScrabbleBase.Board.Configuration.*;
  * Contains logic for exhaustive move generation
  * given game context.
  */
-@SuppressWarnings("DuplicatedCode")
 public class Generator {
 
   private static class ValidationResult {
