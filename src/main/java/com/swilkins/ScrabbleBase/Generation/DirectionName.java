@@ -1,6 +1,6 @@
 package com.swilkins.ScrabbleBase.Generation;
 
-public enum DirectionName {
+enum DirectionName {
 
   UP("up"),
   DOWN("down"),
