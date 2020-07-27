@@ -1,11 +1,11 @@
 package com.swilkins.ScrabbleBase.Board.State;
 
-public class BoardStateUnit {
+public class BoardSquare {
 
   private final Multiplier multiplier;
   private Tile tile;
 
-  public BoardStateUnit(Multiplier multiplier, Tile tile) {
+  public BoardSquare(Multiplier multiplier, Tile tile) {
     this.multiplier = multiplier;
     this.tile = tile;
   }

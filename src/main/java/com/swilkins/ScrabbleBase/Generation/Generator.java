@@ -2,18 +2,16 @@ package com.swilkins.ScrabbleBase.Generation;
 
 import com.swilkins.ScrabbleBase.Board.Location.Coordinates;
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
-import com.swilkins.ScrabbleBase.Board.State.BoardStateUnit;
+import com.swilkins.ScrabbleBase.Board.State.BoardSquare;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
-import com.swilkins.ScrabbleBase.Generation.Direction.Direction;
 import com.swilkins.ScrabbleBase.Generation.Exception.InvalidBoardStateException;
 import com.swilkins.ScrabbleBase.Generation.Exception.InvalidRackLengthException;
 import com.swilkins.ScrabbleBase.Generation.Exception.UnsetRackCapacityException;
 import com.swilkins.ScrabbleBase.Generation.Exception.UnsetRootException;
-import com.swilkins.ScrabbleBase.Generation.Objects.EnrichedTilePlacement;
-import com.swilkins.ScrabbleBase.Generation.Objects.ScoredCandidate;
 import com.swilkins.ScrabbleBase.Vocabulary.Alphabet;
 import com.swilkins.ScrabbleBase.Vocabulary.Trie;
 import com.swilkins.ScrabbleBase.Vocabulary.TrieNode;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -22,6 +20,38 @@ import java.util.*;
  * given game context.
  */
 public class Generator {
+
+  private static class ValidationResult {
+
+    private final int dimensions;
+    private final int existingTileCount;
+
+    public ValidationResult(int dimensions, int existingTileCount) {
+      this.dimensions = dimensions;
+      this.existingTileCount = existingTileCount;
+    }
+
+  }
+
+  private static class CrossedTilePlacement {
+
+    private final TilePlacement root;
+    private final Set<TilePlacement> cross;
+
+    public CrossedTilePlacement(TilePlacement root, Set<TilePlacement> cross) {
+      this.root = root;
+      this.cross = cross;
+    }
+
+    public TilePlacement getRoot() {
+      return root;
+    }
+
+    public Set<TilePlacement> getCross() {
+      return cross;
+    }
+
+  }
 
   private static TrieNode root = null;
   private static Integer rackCapacity = null;
@@ -34,18 +64,20 @@ public class Generator {
     Generator.rackCapacity = rackCapacity;
   }
 
-  public static List<ScoredCandidate> computeAllCandidates(LinkedList<Tile> rack, BoardStateUnit[][] board) {
+  @NotNull
+  public static List<Candidate> compute(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board,
+                                        @Nullable Comparator<Candidate> ordering) {
     ValidationResult result = validateInput(rack, board);
 
     if (rack.size() == 0) {
       return Collections.emptyList();
     }
 
-    Set<ScoredCandidate> all = new HashSet<>();
+    Set<Candidate> all = new HashSet<>();
 
     java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
-      for (Direction d : Direction.primary) {
-        generate(x, y, x, y, rack, new LinkedList<>(), all, root, d, board, result.dimensions);
+      for (Direction dir : Direction.primary) {
+        generate(x, y, x, y, rack, new LinkedList<>(), all, root, dir, board, result.dimensions);
       }
     };
 
@@ -67,12 +99,16 @@ public class Generator {
       }
     }
 
-    List<ScoredCandidate> collected = new ArrayList<>(all);
-    collected.sort(getDefaultOrdering());
-    return collected;
+    List<Candidate> candidates = new ArrayList<>(all);
+    if (ordering != null) {
+      candidates.sort(ordering);
+    }
+    return candidates;
   }
 
-  public static Comparator<ScoredCandidate> getDefaultOrdering() {
+  @NotNull
+  @Contract(pure = true)
+  public static Comparator<Candidate> getDefaultOrdering() {
     return (one, two) -> {
       int scoreDiff = two.getScore() - one.getScore();
       if (scoreDiff != 0) {
@@ -94,7 +130,9 @@ public class Generator {
     };
   }
 
-  private static ValidationResult validateInput(LinkedList<Tile> rack, BoardStateUnit[][] board)
+  @NotNull
+  @Contract("_, _ -> new")
+  private static ValidationResult validateInput(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board)
           throws UnsetRootException, UnsetRackCapacityException,
           InvalidBoardStateException, InvalidRackLengthException {
     if (root == null) {
@@ -108,12 +146,12 @@ public class Generator {
       throw new InvalidBoardStateException();
     }
     int existingTileCount = 0;
-    for (BoardStateUnit[] minor : board) {
+    for (BoardSquare[] minor : board) {
       if (minor.length != dimensions) {
         throw new InvalidBoardStateException();
       }
-      for (BoardStateUnit unit : minor) {
-        if (unit == null || unit.getMultiplier() == null) {
+      for (BoardSquare unit : minor) {
+        if (unit.getMultiplier() == null) {
           throw new InvalidBoardStateException();
         }
         if (unit.getTile() != null) {
@@ -127,42 +165,26 @@ public class Generator {
     return new ValidationResult(dimensions, existingTileCount);
   }
 
-  private static class ValidationResult {
-
-    private final int dimensions;
-    private final int existingTileCount;
-
-    public ValidationResult(int dimensions, int existingTileCount) {
-      this.dimensions = dimensions;
-      this.existingTileCount = existingTileCount;
-    }
-
-  }
-
   private static void generate(
-          int hX, int hY, int x, int y, LinkedList<Tile> rack, LinkedList<EnrichedTilePlacement> placed, Set<ScoredCandidate> all, TrieNode node,
-          Direction d, BoardStateUnit[][] board, int dimensions) {
+          int hX, int hY, int x, int y, @NotNull LinkedList<Tile> rack, @NotNull LinkedList<CrossedTilePlacement> placed,
+          @NotNull Set<Candidate> all, @NotNull  TrieNode node, @NotNull Direction dir,
+          @NotNull BoardSquare[][] board, int dimensions) {
     Tile existingTile = board[y][x].getTile();
-    Direction i = d.inverse();
+    Direction inv = dir.inverse();
     TrieNode childNode;
 
     java.util.function.Consumer<TrieNode> evaluateAndProceed = child -> {
-      if (child.getTerminal() && d.nextTile(x, y, board) == null) {
-        if ((d.equals(Direction.LEFT) || d.equals(Direction.UP)) || i.nextTile(hX, hY, board) == null) {
-          List<List<TilePlacement>> crosses = new ArrayList<>();
-          List<TilePlacement> primary = new ArrayList<>();
-          int candidateScore = computeCandidateScore(board, placed, primary, crosses);
-          Direction normalized = d.normalize();
-          primary.sort(Direction.along(normalized));
-          all.add(new ScoredCandidate(primary, crosses, normalized.name(), candidateScore));
+      if (child.getTerminal() && dir.nextTile(x, y, board) == null) {
+        if ((dir.equals(Direction.LEFT) || dir.equals(Direction.UP)) || inv.nextTile(hX, hY, board) == null) {
+          all.add(buildCandidate(board, placed, dir));
         }
       }
       Coordinates next;
       TrieNode crossAnchor;
-      if ((next = d.nextCoordinates(x, y, dimensions)) != null) {
-        generate(hX, hY, next.getX(), next.getY(), rack, placed, all, child, d, board, dimensions);
-      } else if ((crossAnchor = child.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY, dimensions)) != null) {
-        generate(hX, hY, next.getX(), next.getY(), rack, placed, all, crossAnchor, i, board, dimensions);
+      if ((next = dir.nextCoordinates(x, y, dimensions)) != null) {
+        generate(hX, hY, next.getX(), next.getY(), rack, placed, all, child, dir, board, dimensions);
+      } else if ((crossAnchor = child.getChild(Trie.DELIMITER)) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
+        generate(hX, hY, next.getX(), next.getY(), rack, placed, all, crossAnchor, inv, board, dimensions);
       }
     };
 
@@ -179,11 +201,11 @@ public class Generator {
           java.util.function.BiConsumer<Character, Boolean> tryLetterPlacement = (letter, isBlank) -> {
             Tile resolvedTile = isBlank ? new Tile(toPlace.getLetter(), toPlace.getValue(), letter) : toPlace;
             TrieNode child;
-            List<TilePlacement> cross;
-            if ((child = node.getChild(letter)) != null && (cross = computeCrossWord(x, y, resolvedTile, d, board)) != null) {
+            Set<TilePlacement> cross;
+            if ((child = node.getChild(letter)) != null && (cross = computeCrossWord(x, y, resolvedTile, dir, board)) != null) {
               TilePlacement root = new TilePlacement(x, y, resolvedTile);
-              List<TilePlacement> resolvedCross = cross.size() > 0 ? cross : null;
-              placed.add(new EnrichedTilePlacement(root, resolvedCross));
+              Set<TilePlacement> resolvedCross = cross.size() > 0 ? cross : null;
+              placed.add(new CrossedTilePlacement(root, resolvedCross));
               evaluateAndProceed.accept(child);
               while (placed.size() > currentPlacedCount) {
                 placed.removeLast();
@@ -209,26 +231,28 @@ public class Generator {
 
       TrieNode crossAnchor;
       Coordinates next;
-      if (currentPlacedCount > 0 && (crossAnchor = node.getChild(Trie.DELIMITER)) != null && (next = i.nextCoordinates(hX, hY, dimensions)) != null) {
-        generate(hX, hY, next.getX(), next.getY(), rack, placed, all, crossAnchor, i, board, dimensions);
+      if (currentPlacedCount > 0 && (crossAnchor = node.getChild(Trie.DELIMITER)) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
+        generate(hX, hY, next.getX(), next.getY(), rack, placed, all, crossAnchor, inv, board, dimensions);
       }
-    } else if (node != null && (childNode = node.getChild(existingTile.getResolvedLetter())) != null) {
-      placed.add(new EnrichedTilePlacement(new TilePlacement(x, y, existingTile, true), null));
+    } else if ((childNode = node.getChild(existingTile.getResolvedLetter())) != null) {
+      placed.add(new CrossedTilePlacement(new TilePlacement(x, y, existingTile, true), null));
       evaluateAndProceed.accept(childNode);
     }
   }
 
-  private static List<TilePlacement> computeCrossWord(int sX, int sY, Tile toPlace, Direction d, BoardStateUnit[][] board) {
-    d = d.perpendicular();
-    if (d.nextTile(sX, sY, board) == null && d.inverse().nextTile(sX, sY, board) == null) {
-      return Collections.emptyList();
+  @Nullable
+  private static Set<TilePlacement> computeCrossWord(int sX, int sY, @NotNull Tile toPlace, @NotNull Direction dir,
+                                                     @NotNull BoardSquare[][] board) {
+    dir = dir.perpendicular();
+    if (dir.nextTile(sX, sY, board) == null && dir.inverse().nextTile(sX, sY, board) == null) {
+      return Collections.emptySet();
     }
-    List<TilePlacement> placements = new ArrayList<>();
+    Set<TilePlacement> placements = new HashSet<>();
     Tile tile = toPlace;
     TrieNode node = root;
     int x = sX;
     int y = sY;
-    Direction original = d;
+    Direction original = dir;
 
     while (tile != null) {
       placements.add(new TilePlacement(x, y, tile));
@@ -236,13 +260,13 @@ public class Generator {
         break;
       }
       TilePlacement next;
-      if ((next = d.nextTile(x, y, board)) != null) {
+      if ((next = dir.nextTile(x, y, board)) != null) {
         x = next.getX();
         y = next.getY();
         tile = next.getTile();
       } else {
-        d = d.inverse();
-        if (d.equals(original) || (next = d.nextTile(sX, sY, board)) == null) {
+        dir = dir.inverse();
+        if (dir.equals(original) || (next = dir.nextTile(sX, sY, board)) == null) {
           break;
         }
         x = next.getX();
@@ -255,34 +279,37 @@ public class Generator {
     }
 
     if (node != null && node.getTerminal()) {
-      placements.sort(Direction.along(d));
       return placements;
     }
     return null;
   }
 
-  private static int computeCandidateScore(BoardStateUnit[][] board, List<EnrichedTilePlacement> placements, List<TilePlacement> primary, List<List<TilePlacement>> crosses) {
-    for (EnrichedTilePlacement placement : placements) {
+  private static Candidate buildCandidate(@NotNull BoardSquare[][] board, @NotNull List<CrossedTilePlacement> placements,
+                                          @NotNull Direction dir) {
+    Set<Set<TilePlacement>> crosses = new HashSet<>();
+    Set<TilePlacement> primary = new HashSet<>();
+
+    for (CrossedTilePlacement placement : placements) {
       primary.add(placement.getRoot());
       if (placement.getCross() != null) {
         crosses.add(placement.getCross());
       }
     }
 
-    int sum = computeWordScore(board, primary);
-    for (List<TilePlacement> word : crosses) {
-      sum += computeWordScore(board, word);
+    int score = computeWordScore(board, primary);
+    for (Set<TilePlacement> word : crosses) {
+      score += computeWordScore(board, word);
     }
 
-    return sum;
+    return new Candidate(primary, crosses, dir.normalize(), score);
   }
 
-  private static int computeWordScore(BoardStateUnit[][] board, List<TilePlacement> placements) {
+  private static int computeWordScore(@NotNull BoardSquare[][] board, @NotNull Set<TilePlacement> placements) {
     int wordMultiplier = 1;
     int newTiles = 0, sum = 0;
     for (TilePlacement placement : placements) {
       Tile tile = placement.getTile();
-      BoardStateUnit state = board[placement.getY()][placement.getX()];
+      BoardSquare state = board[placement.getY()][placement.getX()];
       if (state.getTile() == null) {
         newTiles++;
       }

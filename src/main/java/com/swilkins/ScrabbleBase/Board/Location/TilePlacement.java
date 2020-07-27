@@ -55,4 +55,8 @@ public class TilePlacement {
     return Objects.hash(x, y, tile);
   }
 
+  @Override
+  public String toString() {
+    return String.format("%s(%d, %d)", tile.getResolvedLetter(), x, y);
+  }
 }

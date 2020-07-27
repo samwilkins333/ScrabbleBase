@@ -1,12 +1,9 @@
 package com.swilkins.ScrabbleBase.Generation;
 
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
-import com.swilkins.ScrabbleBase.Board.State.BoardStateUnit;
+import com.swilkins.ScrabbleBase.Board.State.BoardSquare;
 import com.swilkins.ScrabbleBase.Board.State.Rack;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
-import com.swilkins.ScrabbleBase.Generation.Direction.Direction;
-import com.swilkins.ScrabbleBase.Generation.Direction.DirectionName;
-import com.swilkins.ScrabbleBase.Generation.Objects.ScoredCandidate;
 import com.swilkins.ScrabbleBase.Vocabulary.Alphabet;
 import com.swilkins.ScrabbleBase.Vocabulary.TrieFactory;
 import org.junit.Before;
@@ -18,11 +15,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.swilkins.ScrabbleBase.Board.Configuration.*;
+import static com.swilkins.ScrabbleBase.Generation.Generator.getDefaultOrdering;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class GenerationTests {
-  private BoardStateUnit[][] board;
+  private BoardSquare[][] board;
   private Rack rack;
 
   @BeforeClass
@@ -42,11 +40,11 @@ public class GenerationTests {
   public void highestScoringRegularOpeningMoveTest() {
     rack.addAllFromLetters("aboride");
 
-    List<ScoredCandidate> candidates = Generator.computeAllCandidates(rack, board);
+    List<Candidate> candidates = Generator.compute(rack, board, getDefaultOrdering());
 
     assertEquals(1040, candidates.size());
 
-    ScoredCandidate optimal = candidates.get(0);
+    Candidate optimal = candidates.get(0);
 
     assertEquals(24, optimal.getScore());
     assertEquals(DirectionName.DOWN, optimal.getDirection());
@@ -68,19 +66,19 @@ public class GenerationTests {
     rack.addAllFromLetters("sordma");
 
     rack.addFromLetter(Tile.BLANK);
-    ScoredCandidate computedOptimal = Generator.computeAllCandidates(rack, board).get(0);
+    Candidate computedOptimal = Generator.compute(rack, board, getDefaultOrdering()).get(0);
     rack.removeLast();
 
-    LinkedList<ScoredCandidate> collector = new LinkedList<>();
+    LinkedList<Candidate> collector = new LinkedList<>();
 
     for (char letter : Alphabet.letters) {
       rack.add(new Tile(letter, 0, null));
-      collector.add(Generator.computeAllCandidates(rack, board).get(0));
+      collector.add(Generator.compute(rack, board, getDefaultOrdering()).get(0));
       rack.removeLast();
     }
-    collector.sort(Generator.getDefaultOrdering());
+    collector.sort(getDefaultOrdering());
 
-    ScoredCandidate collectedOptimal = collector.get(0);
+    Candidate collectedOptimal = collector.get(0);
     assertEquals(computedOptimal.getPrimary().size(), collectedOptimal.getPrimary().size());
     assertEquals(computedOptimal.getDirection(), collectedOptimal.getDirection());
     assertEquals(computedOptimal.getScore(), collectedOptimal.getScore());
@@ -96,7 +94,7 @@ public class GenerationTests {
   @Test
   public void shouldNotFindAnyCandidates() {
     rack.addAllFromLetters("dczklmn");
-    assertTrue(Generator.computeAllCandidates(rack, board).isEmpty());
+    assertTrue(Generator.compute(rack, board, getDefaultOrdering()).isEmpty());
   }
 
   @Test
@@ -106,7 +104,7 @@ public class GenerationTests {
 
     rack.addAllFromLetters("fnhorsb");
 
-    List<ScoredCandidate> candidates = Generator.computeAllCandidates(rack, board);
+    List<Candidate> candidates = Generator.compute(rack, board, getDefaultOrdering());
 
     assertEquals(444, candidates.size());
 
@@ -191,7 +189,7 @@ public class GenerationTests {
 
     for (int i = 0; i < expectedX.length; i++) {
       boolean matched = false;
-      for (ScoredCandidate candidate : candidates) {
+      for (Candidate candidate : candidates) {
         List<TilePlacement> placements = candidate.getPrimary();
         if (placements.size() != expectedX[i].length) {
           continue;
@@ -262,7 +260,7 @@ public class GenerationTests {
 
     rack.addAllFromLetters("aenjpbz");
 
-    List<ScoredCandidate> candidates = Generator.computeAllCandidates(rack, board);
+    List<Candidate> candidates = Generator.compute(rack, board, getDefaultOrdering());
 
     assertEquals(330, candidates.size());
 
@@ -274,7 +272,7 @@ public class GenerationTests {
     int expectedScore = 18;
 
     boolean matched = false;
-    for (ScoredCandidate candidate : candidates) {
+    for (Candidate candidate : candidates) {
       List<TilePlacement> placements = candidate.getPrimary();
       if (placements.size() != expectedX.length) {
         continue;

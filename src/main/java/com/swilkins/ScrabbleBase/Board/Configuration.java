@@ -1,6 +1,6 @@
 package com.swilkins.ScrabbleBase.Board;
 
-import com.swilkins.ScrabbleBase.Board.State.BoardStateUnit;
+import com.swilkins.ScrabbleBase.Board.State.BoardSquare;
 import com.swilkins.ScrabbleBase.Board.State.Multiplier;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
 
@@ -46,7 +46,7 @@ public final class Configuration {
     standardTileMapping.put('z', new TileConfiguration(1, 10));
   }
 
-  public static void logBoard(BoardStateUnit[][] board) {
+  public static void logBoard(BoardSquare[][] board) {
     int d = board.length;
     List<String> indices = new ArrayList<>();
     indices.add(" ");
@@ -103,16 +103,16 @@ public final class Configuration {
 
   }
 
-  public static BoardStateUnit[][] getStandardBoard() {
+  public static BoardSquare[][] getStandardBoard() {
     int d = STANDARD_BOARD_DIMENSIONS;
-    BoardStateUnit[][] board = new BoardStateUnit[d][d];
+    BoardSquare[][] board = new BoardSquare[d][d];
     for (int y = 0; y < d; y++) {
       for (int x = 0; x < d; x++) {
         int _x = Math.min(x, d - 1 - x);
         int _y = Math.min(y, d - 1 - y);
         Multiplier special = Configuration.standardMultiplierMapping.get(_y).get(_x);
         Multiplier resolved = special != null ? special : new Multiplier();
-        board[y][x] = new BoardStateUnit(resolved, null);
+        board[y][x] = new BoardSquare(resolved, null);
       }
     }
     return board;

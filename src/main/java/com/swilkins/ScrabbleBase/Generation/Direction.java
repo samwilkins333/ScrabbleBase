@@ -1,11 +1,12 @@
-package com.swilkins.ScrabbleBase.Generation.Direction;
+package com.swilkins.ScrabbleBase.Generation;
 
 import com.swilkins.ScrabbleBase.Board.Location.Coordinates;
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
-import com.swilkins.ScrabbleBase.Board.State.BoardStateUnit;
+import com.swilkins.ScrabbleBase.Board.State.BoardSquare;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
 
 import java.util.Comparator;
+import java.util.List;
 
 public class Direction {
 
@@ -34,7 +35,7 @@ public class Direction {
     return y + this.yInc;
   }
 
-  public TilePlacement nextTile(int x, int y, BoardStateUnit[][] board) {
+  public TilePlacement nextTile(int x, int y, BoardSquare[][] board) {
     Coordinates next;
     Tile tile;
     if ((next = this.nextCoordinates(x, y, board.length)) != null && (tile = board[next.getY()][next.getX()].getTile()) != null) {
@@ -85,6 +86,13 @@ public class Direction {
       return Comparator.comparing(TilePlacement::getY);
     }
     return Comparator.comparingInt(TilePlacement::getX);
+  }
+
+  public static Comparator<List<TilePlacement>> crossesAlong(Direction direction) {
+    if (direction == Direction.DOWN) {
+      return Comparator.comparingInt(cross -> cross.get(0).getY());
+    }
+    return Comparator.comparingInt(cross -> cross.get(0).getX());
   }
 
   public DirectionName name() {

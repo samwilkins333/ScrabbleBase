@@ -1,4 +1,4 @@
-package com.swilkins.ScrabbleBase.Generation.Direction;
+package com.swilkins.ScrabbleBase.Generation;
 
 public enum DirectionName {
 
@@ -17,4 +17,5 @@ public enum DirectionName {
   public String toString() {
     return name;
   }
+
 }

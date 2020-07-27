@@ -1,39 +1,57 @@
-package com.swilkins.ScrabbleBase.Generation.Objects;
+package com.swilkins.ScrabbleBase.Generation;
 
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
-import com.swilkins.ScrabbleBase.Generation.Direction.DirectionName;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
-public class ScoredCandidate {
+import static com.swilkins.ScrabbleBase.Generation.Direction.along;
+import static com.swilkins.ScrabbleBase.Generation.Direction.crossesAlong;
 
-  private final List<TilePlacement> primary;
+public class Candidate {
+
+  private final Set<TilePlacement> primarySource;
+  private List<TilePlacement> primary = null;
+  private Set<Set<TilePlacement>> crossesSource = null;
   private List<List<TilePlacement>> crosses = null;
-  private final DirectionName direction;
+  private final Direction direction;
   private final int score;
   private List<String> serialized = null;
 
-  public ScoredCandidate(List<TilePlacement> primary, List<List<TilePlacement>> crosses, DirectionName direction, int score) {
-    this.primary = primary;
+  public Candidate(Set<TilePlacement> primary, Set<Set<TilePlacement>> crosses, Direction direction, int score) {
+    this.primarySource = primary;
     if (crosses != null && !crosses.isEmpty()) {
-      this.crosses = crosses;
+      this.crossesSource = crosses;
     }
     this.direction = direction;
     this.score = score;
   }
 
   public List<TilePlacement> getPrimary() {
+    if (primary == null) {
+      primary = new ArrayList<>(primarySource);
+      primary.sort(along(direction));
+    }
     return primary;
   }
 
   public DirectionName getDirection() {
-    return direction;
+    return direction.name();
   }
 
   public List<List<TilePlacement>> getCrosses() {
+    if (crosses == null) {
+      Comparator<TilePlacement> crossSorter = along(direction.perpendicular());
+      if (crossesSource != null) {
+        crosses = new ArrayList<>(crossesSource.size());
+        for (Set<TilePlacement> crossSource : crossesSource) {
+          List<TilePlacement> cross = new ArrayList<>(crossSource);
+          cross.sort(crossSorter);
+          crosses.add(cross);
+        }
+        crosses.sort(crossesAlong(direction));
+      }
+    }
     return crosses;
   }
 
@@ -41,12 +59,12 @@ public class ScoredCandidate {
     if (serialized == null) {
       serialized = new ArrayList<>();
       StringBuilder builder = new StringBuilder();
-      for (TilePlacement placement : primary) {
+      for (TilePlacement placement : getPrimary()) {
         builder.append(placement.getTile().getResolvedLetter());
       }
       serialized.add(builder.toString());
       if (crosses != null) {
-        for (List<TilePlacement> cross : crosses) {
+        for (List<TilePlacement> cross : getCrosses()) {
           builder = new StringBuilder();
           for (TilePlacement placement : cross) {
             builder.append(placement.getTile().getResolvedLetter());
@@ -66,22 +84,29 @@ public class ScoredCandidate {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    ScoredCandidate that = (ScoredCandidate) o;
-    return score == that.score &&
-            primary.equals(that.primary) &&
+    Candidate that = (Candidate) o;
+    boolean equals = score == that.score &&
+            primarySource.equals(that.primarySource) &&
             direction == that.direction;
+    if (crossesSource == null && that.crossesSource == null) {
+      return equals;
+    }
+    if (crossesSource == null || that.crossesSource == null) {
+      return false;
+    }
+    return equals && crossesSource.equals(that.crossesSource);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(primary, direction.name(), score);
+    return Objects.hash(primarySource, direction, score, crossesSource);
   }
 
   @Override
   public String toString() {
     StringBuilder word = new StringBuilder();
     List<String> locations = new ArrayList<>();
-    for (TilePlacement p : this.primary) {
+    for (TilePlacement p : this.getPrimary()) {
       Tile tile = p.getTile();
       String resolved;
       if (tile.getLetterProxy() != null) {
@@ -96,7 +121,7 @@ public class ScoredCandidate {
       }
       locations.add(placementString);
     }
-    return word + " (" + this.score + ") @ [" + String.join(", ", locations) + "] " + this.direction.name();
+    return word + " (" + this.score + ") @ [" + String.join(", ", locations) + "] " + this.direction.name() + " " + getCrosses();
   }
 
 }
