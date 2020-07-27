@@ -8,7 +8,7 @@ import com.swilkins.ScrabbleBase.Board.State.Tile;
 import java.util.Comparator;
 import java.util.List;
 
-class Direction {
+public class Direction {
 
   public static final Direction UP = new Direction(0, -1, DirectionName.UP);
   public static final Direction DOWN = new Direction(0, 1, DirectionName.DOWN);

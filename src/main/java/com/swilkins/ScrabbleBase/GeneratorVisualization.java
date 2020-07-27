@@ -1,4 +1,8 @@
-package com.swilkins.ScrabbleBase.Generation;
+package com.swilkins.ScrabbleBase;
+
+import com.swilkins.ScrabbleBase.Board.State.Rack;
+import com.swilkins.ScrabbleBase.Generation.Candidate;
+import com.swilkins.ScrabbleBase.Generation.Direction;
 
 import com.swilkins.ScrabbleBase.Board.Location.Coordinates;
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
@@ -10,7 +14,9 @@ import com.swilkins.ScrabbleBase.Generation.Exception.UnsetRackCapacityException
 import com.swilkins.ScrabbleBase.Generation.Exception.UnsetRootException;
 import com.swilkins.ScrabbleBase.Vocabulary.Alphabet;
 import com.swilkins.ScrabbleBase.Vocabulary.Trie;
+import com.swilkins.ScrabbleBase.Vocabulary.TrieFactory;
 import com.swilkins.ScrabbleBase.Vocabulary.TrieNode;
+import org.algorithm_visualizer.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -22,7 +28,48 @@ import static com.swilkins.ScrabbleBase.Board.Configuration.*;
  * given game context.
  */
 @SuppressWarnings("DuplicatedCode")
-public class Generator {
+public class GeneratorVisualization {
+  private static final Array2DTracer boardTracer = new Array2DTracer("Board");
+  private static final Array1DTracer rackTracer = new Array1DTracer("Rack");
+
+  private static final char[][] boardMock = new char[STANDARD_BOARD_DIMENSIONS][STANDARD_BOARD_DIMENSIONS];
+  private static final char[] rackMock = new char[STANDARD_RACK_CAPACITY];
+
+  public static void main(String[] args) {
+    GeneratorVisualization.setRackCapacity(STANDARD_RACK_CAPACITY);
+    Trie trie = TrieFactory.loadFrom(GeneratorVisualization.class.getResource("/ospd4.txt"));
+    GeneratorVisualization.setRoot(trie.getRoot());
+
+    boardMock[7][7] = 'a';
+    boardMock[7][8] = 'a';
+    boardTracer.set(boardMock);
+
+    rackMock[0] = 'a';
+    rackMock[1] = 'b';
+    rackMock[2] = 'h';
+    rackMock[3] = 'o';
+    rackMock[4] = 'r';
+    rackMock[5] = 's';
+    rackMock[6] = 'd';
+    rackTracer.set(rackMock);
+
+    Layout.setRoot(new VerticalLayout(new Commander[]{boardTracer, rackTracer}));
+
+    Rack rack = new Rack(STANDARD_RACK_CAPACITY);
+    rack.addFromLetter('a');
+    rack.addFromLetter('b');
+    rack.addFromLetter('h');
+    rack.addFromLetter('o');
+    rack.addFromLetter('r');
+    rack.addFromLetter('s');
+    rack.addFromLetter('d');
+
+    BoardSquare[][] board = getStandardBoard();
+    board[7][7].setTile(getStandardTile('a'));
+    board[7][8].setTile(getStandardTile('a'));
+    Tracer.delay();
+    compute(rack, board, getDefaultOrdering());
+  }
 
   private static class ValidationResult {
 
@@ -60,11 +107,11 @@ public class Generator {
   private static Integer rackCapacity = null;
 
   public static void setRoot(TrieNode root) {
-    Generator.root = root;
+    GeneratorVisualization.root = root;
   }
 
   public static void setRackCapacity(int rackCapacity) {
-    Generator.rackCapacity = rackCapacity;
+    GeneratorVisualization.rackCapacity = rackCapacity;
   }
 
   @NotNull
@@ -90,6 +137,8 @@ public class Generator {
     } else {
       for (int y = 0; y < result.dimensions; y++) {
         for (int x = 0; x < result.dimensions; x++) {
+          boardTracer.select(x, y);
+          Tracer.delay();
           if (board[y][x].getTile() == null) {
             for (Direction d : Direction.all) {
               if (d.nextTile(x, y, board) != null) {
@@ -98,6 +147,7 @@ public class Generator {
               }
             }
           }
+          boardTracer.deselect(x, y);
         }
       }
     }
