@@ -15,6 +15,8 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 
+import static com.swilkins.ScrabbleBase.Board.Configuration.*;
+
 /**
  * Contains logic for exhaustive move generation
  * given game context.
@@ -325,7 +327,7 @@ public class Generator {
 
     int total = sum * wordMultiplier;
     if (newTiles == rackCapacity) {
-      total += 50;
+      total += STANDARD_BINGO;
     }
     return total;
   }

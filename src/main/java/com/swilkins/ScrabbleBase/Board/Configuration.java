@@ -13,6 +13,7 @@ public final class Configuration {
 
   public static final int STANDARD_RACK_CAPACITY = 7;
   public static final int STANDARD_BOARD_DIMENSIONS = 15;
+  public static final int STANDARD_BINGO = 50;
 
   public static final Map<Character, TileConfiguration> standardTileMapping = new HashMap<>();
 
