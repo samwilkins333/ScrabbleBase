@@ -53,15 +53,21 @@ public class Generator {
       return cross;
     }
 
+
   }
+
+  private TrieNode root;
+  private Integer rackCapacity;
 
   public Generator(Trie trie, int rackCapacity) {
     this.root = trie.getRoot();
     this.rackCapacity = rackCapacity;
   }
 
-  private TrieNode root;
-  private Integer rackCapacity;
+  public Generator() {
+    this.root = null;
+    this.rackCapacity = null;
+  }
 
   public void setTrie(Trie trie) {
     this.root = trie.getRoot();
