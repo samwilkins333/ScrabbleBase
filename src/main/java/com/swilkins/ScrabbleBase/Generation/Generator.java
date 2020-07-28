@@ -55,19 +55,24 @@ public class Generator {
 
   }
 
-  private static TrieNode root = null;
-  private static Integer rackCapacity = null;
-
-  public static void setRoot(TrieNode root) {
-    Generator.root = root;
+  public Generator(Trie trie, int rackCapacity) {
+    this.root = trie.getRoot();
+    this.rackCapacity = rackCapacity;
   }
 
-  public static void setRackCapacity(int rackCapacity) {
-    Generator.rackCapacity = rackCapacity;
+  private TrieNode root;
+  private Integer rackCapacity;
+
+  public void setTrie(Trie trie) {
+    this.root = trie.getRoot();
+  }
+
+  public void setRackCapacity(int rackCapacity) {
+    this.rackCapacity = rackCapacity;
   }
 
   @NotNull
-  public static List<Candidate> compute(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board,
+  public List<Candidate> compute(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board,
                                         @Nullable Comparator<Candidate> ordering) {
     ValidationResult result = validateInput(rack, board);
 
@@ -134,7 +139,7 @@ public class Generator {
 
   @NotNull
   @Contract("_, _ -> new")
-  private static ValidationResult validateInput(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board)
+  private ValidationResult validateInput(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board)
           throws UnsetRootException, UnsetRackCapacityException,
           InvalidBoardStateException, InvalidRackLengthException {
     if (root == null) {
@@ -167,7 +172,7 @@ public class Generator {
     return new ValidationResult(dimensions, existingTileCount);
   }
 
-  private static void generate(
+  private void generate(
           int hX, int hY, int x, int y, @NotNull LinkedList<Tile> rack, @NotNull LinkedList<CrossedTilePlacement> placed,
           @NotNull Set<Candidate> all, @NotNull  TrieNode node, @NotNull Direction dir,
           @NotNull BoardSquare[][] board, int dimensions) {
@@ -243,7 +248,7 @@ public class Generator {
   }
 
   @Nullable
-  private static Set<TilePlacement> computeCrossWord(int sX, int sY, @NotNull Tile toPlace, @NotNull Direction dir,
+  private Set<TilePlacement> computeCrossWord(int sX, int sY, @NotNull Tile toPlace, @NotNull Direction dir,
                                                      @NotNull BoardSquare[][] board) {
     dir = dir.perpendicular();
     if (dir.nextTile(sX, sY, board) == null && dir.inverse().nextTile(sX, sY, board) == null) {
@@ -286,7 +291,7 @@ public class Generator {
     return null;
   }
 
-  private static Candidate buildCandidate(@NotNull BoardSquare[][] board, @NotNull List<CrossedTilePlacement> placements,
+  private Candidate buildCandidate(@NotNull BoardSquare[][] board, @NotNull List<CrossedTilePlacement> placements,
                                           @NotNull Direction dir) {
     Set<Set<TilePlacement>> crosses = new HashSet<>();
     Set<TilePlacement> primary = new HashSet<>();
@@ -306,7 +311,7 @@ public class Generator {
     return new Candidate(primary, crosses, dir.normalize(), score);
   }
 
-  private static int computeWordScore(@NotNull BoardSquare[][] board, @NotNull Set<TilePlacement> placements) {
+  private int computeWordScore(@NotNull BoardSquare[][] board, @NotNull Set<TilePlacement> placements) {
     int wordMultiplier = 1;
     int newTiles = 0, sum = 0;
     for (TilePlacement placement : placements) {

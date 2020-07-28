@@ -20,14 +20,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class GenerationTests {
+  private static Generator generator;
   private BoardSquare[][] board;
   private Rack rack;
 
   @BeforeClass
   public static void configureGenerator() {
-    Generator.setRackCapacity(STANDARD_RACK_CAPACITY);
     URL dictionaryPath = GenerationTests.class.getResource("/ospd4.txt");
-    Generator.setRoot(TrieFactory.loadFrom(dictionaryPath).getRoot());
+    generator = new Generator(TrieFactory.loadFrom(dictionaryPath), STANDARD_RACK_CAPACITY);
   }
 
   @Before
@@ -40,7 +40,7 @@ public class GenerationTests {
   public void highestScoringRegularOpeningMoveTest() {
     rack.addAllFromLetters("aboride");
 
-    List<Candidate> candidates = Generator.compute(rack, board, getDefaultOrdering());
+    List<Candidate> candidates = generator.compute(rack, board, getDefaultOrdering());
 
     assertEquals(1040, candidates.size());
 
@@ -66,14 +66,14 @@ public class GenerationTests {
     rack.addAllFromLetters("sordma");
 
     rack.addFromLetter(Tile.BLANK);
-    Candidate computedOptimal = Generator.compute(rack, board, getDefaultOrdering()).get(0);
+    Candidate computedOptimal = generator.compute(rack, board, getDefaultOrdering()).get(0);
     rack.removeLast();
 
     LinkedList<Candidate> collector = new LinkedList<>();
 
     for (char letter : Alphabet.letters) {
       rack.add(new Tile(letter, 0, null));
-      collector.add(Generator.compute(rack, board, getDefaultOrdering()).get(0));
+      collector.add(generator.compute(rack, board, getDefaultOrdering()).get(0));
       rack.removeLast();
     }
     collector.sort(getDefaultOrdering());
@@ -94,7 +94,7 @@ public class GenerationTests {
   @Test
   public void shouldNotFindAnyCandidates() {
     rack.addAllFromLetters("dczklmn");
-    assertTrue(Generator.compute(rack, board, getDefaultOrdering()).isEmpty());
+    assertTrue(generator.compute(rack, board, getDefaultOrdering()).isEmpty());
   }
 
   @Test
@@ -104,7 +104,7 @@ public class GenerationTests {
 
     rack.addAllFromLetters("fnhorsb");
 
-    List<Candidate> candidates = Generator.compute(rack, board, getDefaultOrdering());
+    List<Candidate> candidates = generator.compute(rack, board, getDefaultOrdering());
 
     assertEquals(444, candidates.size());
 
@@ -260,7 +260,7 @@ public class GenerationTests {
 
     rack.addAllFromLetters("aenjpbz");
 
-    List<Candidate> candidates = Generator.compute(rack, board, getDefaultOrdering());
+    List<Candidate> candidates = generator.compute(rack, board, getDefaultOrdering());
 
     assertEquals(330, candidates.size());
 
