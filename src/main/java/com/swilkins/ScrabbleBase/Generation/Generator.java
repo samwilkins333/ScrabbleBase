@@ -53,7 +53,6 @@ public class Generator {
       return cross;
     }
 
-
   }
 
   private TrieNode root;
