@@ -3,6 +3,7 @@ package com.swilkins.ScrabbleBase.Generation;
 import com.swilkins.ScrabbleBase.Board.Location.Coordinates;
 import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import com.swilkins.ScrabbleBase.Board.State.BoardSquare;
+import com.swilkins.ScrabbleBase.Board.State.Multiplier;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
 import com.swilkins.ScrabbleBase.Generation.Exception.InvalidBoardStateException;
 import com.swilkins.ScrabbleBase.Generation.Exception.InvalidRackLengthException;
@@ -77,6 +78,30 @@ public class Generator {
   }
 
   @NotNull
+  @Contract(pure = true)
+  public static Comparator<Candidate> getDefaultOrdering() {
+    return (one, two) -> {
+      int scoreDiff = two.getScore() - one.getScore();
+      if (scoreDiff != 0) {
+        return scoreDiff;
+      }
+      StringBuilder oneSerialized = new StringBuilder();
+      for (TilePlacement placement : one.getPrimary()) {
+        oneSerialized.append(placement.getTile().getResolvedLetter());
+      }
+      StringBuilder twoSerialized = new StringBuilder();
+      for (TilePlacement placement : two.getPrimary()) {
+        twoSerialized.append(placement.getTile().getResolvedLetter());
+      }
+      int serializedDiff = oneSerialized.toString().compareTo(twoSerialized.toString());
+      if (serializedDiff != 0) {
+        return serializedDiff;
+      }
+      return one.getDirection().name().compareTo(two.getDirection().name());
+    };
+  }
+
+  @NotNull
   public List<Candidate> compute(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board,
                                         @Nullable Comparator<Candidate> ordering) {
     ValidationResult result = validateInput(rack, board);
@@ -119,30 +144,6 @@ public class Generator {
   }
 
   @NotNull
-  @Contract(pure = true)
-  public static Comparator<Candidate> getDefaultOrdering() {
-    return (one, two) -> {
-      int scoreDiff = two.getScore() - one.getScore();
-      if (scoreDiff != 0) {
-        return scoreDiff;
-      }
-      StringBuilder oneSerialized = new StringBuilder();
-      for (TilePlacement placement : one.getPrimary()) {
-        oneSerialized.append(placement.getTile().getResolvedLetter());
-      }
-      StringBuilder twoSerialized = new StringBuilder();
-      for (TilePlacement placement : two.getPrimary()) {
-        twoSerialized.append(placement.getTile().getResolvedLetter());
-      }
-      int serializedDiff = oneSerialized.toString().compareTo(twoSerialized.toString());
-      if (serializedDiff != 0) {
-        return serializedDiff;
-      }
-      return one.getDirection().name().compareTo(two.getDirection().name());
-    };
-  }
-
-  @NotNull
   @Contract("_, _ -> new")
   private ValidationResult validateInput(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board)
           throws UnsetRootException, UnsetRackCapacityException,
@@ -162,11 +163,11 @@ public class Generator {
       if (minor.length != dimensions) {
         throw new InvalidBoardStateException();
       }
-      for (BoardSquare unit : minor) {
-        if (unit.getMultiplier() == null) {
+      for (BoardSquare square : minor) {
+        if (square.getMultiplier() == null) {
           throw new InvalidBoardStateException();
         }
-        if (unit.getTile() != null) {
+        if (square.getTile() != null) {
           existingTileCount++;
         }
       }
@@ -325,13 +326,12 @@ public class Generator {
       if (state.getTile() == null) {
         newTiles++;
       }
-      if (state.getMultiplier() == null || state.getTile() != null) {
+      Multiplier multiplier = state.getMultiplier();
+      if (multiplier == null || state.getTile() != null) {
         sum += tile.getValue();
       } else {
-        int letterValue = state.getMultiplier().getLetterValue();
-        int wordValue = state.getMultiplier().getWordValue();
-        sum += (letterValue * tile.getValue());
-        wordMultiplier *= wordValue;
+        sum += (multiplier.getLetterValue() * tile.getValue());
+        wordMultiplier *= multiplier.getWordValue();
       }
     }
 
