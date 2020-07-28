@@ -40,17 +40,15 @@ public class Candidate {
   }
 
   public List<List<TilePlacement>> getCrosses() {
-    if (crosses == null) {
+    if (crosses == null && crossesSource != null) {
+      crosses = new ArrayList<>(crossesSource.size());
       Comparator<TilePlacement> crossSorter = along(direction.perpendicular());
-      if (crossesSource != null) {
-        crosses = new ArrayList<>(crossesSource.size());
-        for (Set<TilePlacement> crossSource : crossesSource) {
-          List<TilePlacement> cross = new ArrayList<>(crossSource);
-          cross.sort(crossSorter);
-          crosses.add(cross);
-        }
-        crosses.sort(crossesAlong(direction));
+      for (Set<TilePlacement> crossSource : crossesSource) {
+        List<TilePlacement> cross = new ArrayList<>(crossSource);
+        cross.sort(crossSorter);
+        crosses.add(cross);
       }
+      crosses.sort(crossesAlong(direction));
     }
     return crosses;
   }
