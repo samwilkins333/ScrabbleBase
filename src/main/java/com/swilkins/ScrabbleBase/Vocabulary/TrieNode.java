@@ -28,6 +28,10 @@ public class TrieNode {
     return child;
   }
 
+  public TrieNode removeChild(char letter) {
+    return this.children.remove(letter);
+  }
+
   public TrieNode getChild(char letter) {
     return this.children.get(letter);
   }
@@ -42,6 +46,10 @@ public class TrieNode {
 
   public boolean getTerminal() {
     return isTerminal;
+  }
+
+  public int getChildCount() {
+    return children.size();
   }
 
   public void setTerminal(Boolean terminal) {

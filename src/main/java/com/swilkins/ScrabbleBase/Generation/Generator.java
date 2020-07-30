@@ -8,9 +8,9 @@ import com.swilkins.ScrabbleBase.Board.State.Tile;
 import com.swilkins.ScrabbleBase.Generation.Exception.InvalidBoardStateException;
 import com.swilkins.ScrabbleBase.Generation.Exception.InvalidRackLengthException;
 import com.swilkins.ScrabbleBase.Generation.Exception.UnsetRackCapacityException;
-import com.swilkins.ScrabbleBase.Generation.Exception.UnsetRootException;
+import com.swilkins.ScrabbleBase.Generation.Exception.UnsetTrieException;
 import com.swilkins.ScrabbleBase.Vocabulary.Alphabet;
-import com.swilkins.ScrabbleBase.Vocabulary.Trie;
+import com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie;
 import com.swilkins.ScrabbleBase.Vocabulary.TrieNode;
 import org.jetbrains.annotations.*;
 
@@ -23,18 +23,6 @@ import static com.swilkins.ScrabbleBase.Board.Configuration.*;
  * given game context.
  */
 public class Generator {
-
-  private static class ValidationResult {
-
-    private final int dimensions;
-    private final int existingTileCount;
-
-    public ValidationResult(int dimensions, int existingTileCount) {
-      this.dimensions = dimensions;
-      this.existingTileCount = existingTileCount;
-    }
-
-  }
 
   private static class CrossedTilePlacement {
 
@@ -56,24 +44,30 @@ public class Generator {
 
   }
 
-  private TrieNode root;
+  private PermutationTrie trie;
   private Integer rackCapacity;
 
-  public Generator(Trie trie, int rackCapacity) {
-    this.root = trie.getRoot();
+  public Generator(@NotNull PermutationTrie trie, int rackCapacity) throws IllegalArgumentException {
+    this.trie = trie;
+    if (rackCapacity <= 0) {
+      throw new IllegalArgumentException("Rack capacity must be a positive value.");
+    }
     this.rackCapacity = rackCapacity;
   }
 
   public Generator() {
-    this.root = null;
+    this.trie = null;
     this.rackCapacity = null;
   }
 
-  public void setTrie(Trie trie) {
-    this.root = trie.getRoot();
+  public void setTrie(@NotNull PermutationTrie trie) throws IllegalArgumentException {
+    this.trie = trie;
   }
 
-  public void setRackCapacity(int rackCapacity) {
+  public void setRackCapacity(int rackCapacity) throws IllegalArgumentException {
+    if (rackCapacity <= 0) {
+      throw new IllegalArgumentException("Rack capacity must be a positive value.");
+    }
     this.rackCapacity = rackCapacity;
   }
 
@@ -103,10 +97,12 @@ public class Generator {
 
   @NotNull
   public List<Candidate> compute(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board,
-                                        @Nullable Comparator<Candidate> ordering) {
-    ValidationResult result = validateInput(rack, board);
+                                        @Nullable Comparator<Candidate> ordering)
+          throws IllegalArgumentException, UnsetTrieException, UnsetRackCapacityException {
+    int existingTileCount = validateInput(rack, board);
+    int dimensions = board.length;
 
-    if (rack.size() == 0) {
+    if (rack.size() == 0 || trie.isEmpty()) {
       return Collections.emptyList();
     }
 
@@ -114,16 +110,16 @@ public class Generator {
 
     java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
       for (Direction dir : Direction.primary) {
-        generate(x, y, x, y, rack, new LinkedList<>(), all, root, dir, board, result.dimensions);
+        generate(x, y, x, y, rack, new LinkedList<>(), all, trie.getRoot(), dir, board, dimensions);
       }
     };
 
-    if (result.existingTileCount == 0) {
-      int midpoint = result.dimensions / 2;
+    if (existingTileCount == 0) {
+      int midpoint = dimensions / 2;
       generateAtHook.accept(midpoint, midpoint);
     } else {
-      for (int y = 0; y < result.dimensions; y++) {
-        for (int x = 0; x < result.dimensions; x++) {
+      for (int y = 0; y < dimensions; y++) {
+        for (int x = 0; x < dimensions; x++) {
           if (board[y][x].getTile() == null) {
             for (Direction d : Direction.all) {
               if (d.nextTile(x, y, board) != null) {
@@ -143,13 +139,11 @@ public class Generator {
     return candidates;
   }
 
-  @NotNull
-  @Contract("_, _ -> new")
-  private ValidationResult validateInput(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board)
-          throws UnsetRootException, UnsetRackCapacityException,
+  private int validateInput(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board)
+          throws UnsetTrieException, UnsetRackCapacityException,
           InvalidBoardStateException, InvalidRackLengthException {
-    if (root == null) {
-      throw new UnsetRootException();
+    if (trie == null) {
+      throw new UnsetTrieException();
     }
     if (rackCapacity == null) {
       throw new UnsetRackCapacityException();
@@ -175,7 +169,7 @@ public class Generator {
     if (rack.size() > rackCapacity) {
       throw new InvalidRackLengthException(rackCapacity, rack.size());
     }
-    return new ValidationResult(dimensions, existingTileCount);
+    return existingTileCount;
   }
 
   private void generate(
@@ -196,7 +190,7 @@ public class Generator {
       TrieNode crossAnchor;
       if ((next = dir.nextCoordinates(x, y, dimensions)) != null) {
         generate(hX, hY, next.getX(), next.getY(), rack, placed, all, child, dir, board, dimensions);
-      } else if ((crossAnchor = child.getChild(Trie.DELIMITER)) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
+      } else if ((crossAnchor = child.getChild(PermutationTrie.DELIMITER)) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
         generate(hX, hY, next.getX(), next.getY(), rack, placed, all, crossAnchor, inv, board, dimensions);
       }
     };
@@ -244,7 +238,7 @@ public class Generator {
 
       TrieNode crossAnchor;
       Coordinates next;
-      if (currentPlacedCount > 0 && (crossAnchor = node.getChild(Trie.DELIMITER)) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
+      if (currentPlacedCount > 0 && (crossAnchor = node.getChild(PermutationTrie.DELIMITER)) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
         generate(hX, hY, next.getX(), next.getY(), rack, placed, all, crossAnchor, inv, board, dimensions);
       }
     } else if ((childNode = node.getChild(existingTile.getResolvedLetter())) != null) {
@@ -262,7 +256,7 @@ public class Generator {
     }
     Set<TilePlacement> placements = new HashSet<>();
     Tile tile = toPlace;
-    TrieNode node = root;
+    TrieNode node = trie.getRoot();
     int x = sX;
     int y = sY;
     Direction original = dir;
@@ -285,7 +279,7 @@ public class Generator {
         x = next.getX();
         y = next.getY();
         tile = next.getTile();
-        if (tile != null && (node = node.getChild(Trie.DELIMITER)) == null) {
+        if (tile != null && (node = node.getChild(PermutationTrie.DELIMITER)) == null) {
           break;
         }
       }
@@ -297,8 +291,10 @@ public class Generator {
     return null;
   }
 
+  @NotNull
+  @Contract("_, _, _ -> new")
   private Candidate buildCandidate(@NotNull BoardSquare[][] board, @NotNull List<CrossedTilePlacement> placements,
-                                          @NotNull Direction dir) {
+                                   @NotNull Direction dir) {
     Set<Set<TilePlacement>> crosses = new HashSet<>();
     Set<TilePlacement> primary = new HashSet<>();
 

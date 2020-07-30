@@ -5,7 +5,7 @@ import com.swilkins.ScrabbleBase.Board.State.BoardSquare;
 import com.swilkins.ScrabbleBase.Board.State.Rack;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
 import com.swilkins.ScrabbleBase.Vocabulary.Alphabet;
-import com.swilkins.ScrabbleBase.Vocabulary.TrieFactory;
+import com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class GenerationTests {
   @BeforeClass
   public static void configureGenerator() {
     URL dictionaryPath = GenerationTests.class.getResource("/ospd4.txt");
-    generator = new Generator(TrieFactory.loadFrom(dictionaryPath), STANDARD_RACK_CAPACITY);
+    generator = new Generator(PermutationTrie.loadFrom(dictionaryPath), STANDARD_RACK_CAPACITY);
   }
 
   @Before
