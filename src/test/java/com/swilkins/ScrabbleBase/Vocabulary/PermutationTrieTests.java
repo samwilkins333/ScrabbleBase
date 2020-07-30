@@ -9,11 +9,11 @@ import java.net.URL;
 
 import static org.junit.Assert.*;
 
-public class TrieTests {
+public class PermutationTrieTests {
 
   @Test
   public void shouldCorrectlyAddAllWords() {
-    URL url = TrieTests.class.getResource("/ospd4.txt");
+    URL url = PermutationTrieTests.class.getResource("/ospd4.txt");
     PermutationTrie trie = PermutationTrie.loadFrom(url);
     try {
       assertTrue(new BufferedReader(new FileReader(url.getFile())).lines().allMatch(trie::contains));
@@ -24,7 +24,7 @@ public class TrieTests {
 
   @Test
   public void shouldNotValidateNonsense() {
-    PermutationTrie trie = PermutationTrie.loadFrom(TrieTests.class.getResource("/ospd4.txt"));
+    PermutationTrie trie = PermutationTrie.loadFrom(PermutationTrieTests.class.getResource("/ospd4.txt"));
     assertFalse(trie.contains(""));
     assertFalse(trie.contains("alsdkbhb"));
   }
