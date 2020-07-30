@@ -101,7 +101,7 @@ public class Generator {
   public List<Candidate> compute(LinkedList<Tile> rack, BoardSquare[][] board,
                                  Comparator<Candidate> ordering)
           throws IllegalArgumentException, UnsetTrieException, UnsetRackCapacityException {
-    int existingTileCount = validateInput(rack, board);
+    Set<Coordinates> validHooks = validateInput(rack, board);
     int dimensions = board.length;
 
     if (rack.size() == 0 || trie.isEmpty()) {
@@ -116,21 +116,12 @@ public class Generator {
       }
     };
 
-    if (existingTileCount == 0) {
+    if (validHooks.isEmpty()) {
       int midpoint = dimensions / 2;
       generateAtHook.accept(midpoint, midpoint);
     } else {
-      for (int y = 0; y < dimensions; y++) {
-        for (int x = 0; x < dimensions; x++) {
-          if (board[y][x].getTile() == null) {
-            for (Direction d : Direction.all) {
-              if (d.nextTile(x, y, board) != null) {
-                generateAtHook.accept(x, y);
-                break;
-              }
-            }
-          }
-        }
+      for (Coordinates hook : validHooks) {
+        generateAtHook.accept(hook.getX(), hook.getY());
       }
     }
 
@@ -141,7 +132,7 @@ public class Generator {
     return candidates;
   }
 
-  private int validateInput(LinkedList<Tile> rack, BoardSquare[][] board)
+  private Set<Coordinates> validateInput(LinkedList<Tile> rack, BoardSquare[][] board)
           throws UnsetTrieException, UnsetRackCapacityException,
           InvalidBoardStateException, InvalidRackLengthException {
     if (rack == null || board == null) {
@@ -153,28 +144,35 @@ public class Generator {
     if (rackCapacity == null) {
       throw new UnsetRackCapacityException();
     }
+    if (rack.size() > rackCapacity) {
+      throw new InvalidRackLengthException(rackCapacity, rack.size());
+    }
     int dimensions = board.length;
     if (dimensions < 3 || dimensions % 2 == 0) {
       throw new InvalidBoardStateException();
     }
-    int existingTileCount = 0;
-    for (BoardSquare[] minor : board) {
+    Set<Coordinates> validHooks = new HashSet<>();
+    for (int y = 0; y < dimensions; y++) {
+      BoardSquare[] minor = board[y];
       if (minor.length != dimensions) {
         throw new InvalidBoardStateException();
       }
-      for (BoardSquare square : minor) {
+      for (int x = 0; x < dimensions; x++) {
+        BoardSquare square = minor[x];
         if (square.getMultiplier() == null) {
           throw new InvalidBoardStateException();
         }
-        if (square.getTile() != null) {
-          existingTileCount++;
+        if (square.getTile() == null) {
+          for (Direction dir : Direction.all) {
+            if (dir.nextTile(x, y, board) != null) {
+              validHooks.add(new Coordinates(x, y));
+              break;
+            }
+          }
         }
       }
     }
-    if (rack.size() > rackCapacity) {
-      throw new InvalidRackLengthException(rackCapacity, rack.size());
-    }
-    return existingTileCount;
+    return validHooks;
   }
 
   private void generate(

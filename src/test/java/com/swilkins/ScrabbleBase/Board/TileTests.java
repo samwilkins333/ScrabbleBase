@@ -1,5 +1,6 @@
 package com.swilkins.ScrabbleBase.Board;
 
+import com.swilkins.ScrabbleBase.Board.Location.Coordinates;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
 import org.junit.Test;
 
@@ -32,6 +33,31 @@ public class TileTests {
     tiles.add(secondDuplicate);
 
     assertEquals(2, tiles.size());
+  }
+
+  @Test
+  public void coordinatesHashingAndEquality() {
+    Coordinates first = new Coordinates(6, 7);
+    Coordinates second = new Coordinates(6, 7);
+
+    assertEquals(first, second);
+
+    Set<Coordinates> coordinates;
+
+    coordinates = new HashSet<>();
+    coordinates.add(first);
+    coordinates.add(second);
+    assertEquals(1, coordinates.size());
+
+    Coordinates third = new Coordinates(7, 6);
+    assertEquals(third, third);
+    assertNotEquals(first, third);
+    assertNotEquals(second, third);
+    coordinates = new HashSet<>();
+    coordinates.add(first);
+    coordinates.add(second);
+    coordinates.add(third);
+    assertEquals(2, coordinates.size());
   }
 
 }
