@@ -12,7 +12,6 @@ import com.swilkins.ScrabbleBase.Generation.Exception.UnsetTrieException;
 import com.swilkins.ScrabbleBase.Vocabulary.Alphabet;
 import com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie;
 import com.swilkins.ScrabbleBase.Vocabulary.TrieNode;
-import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -47,7 +46,10 @@ public class Generator {
   private PermutationTrie trie;
   private Integer rackCapacity;
 
-  public Generator(@NotNull PermutationTrie trie, int rackCapacity) throws IllegalArgumentException {
+  public Generator(PermutationTrie trie, int rackCapacity) throws IllegalArgumentException {
+    if (trie == null) {
+      throw new IllegalArgumentException();
+    }
     this.trie = trie;
     if (rackCapacity <= 0) {
       throw new IllegalArgumentException("Rack capacity must be a positive value.");
@@ -60,19 +62,20 @@ public class Generator {
     this.rackCapacity = null;
   }
 
-  public void setTrie(@NotNull PermutationTrie trie) throws IllegalArgumentException {
+  public void setTrie(PermutationTrie trie) throws IllegalArgumentException {
+    if (trie == null) {
+      throw new IllegalArgumentException();
+    }
     this.trie = trie;
   }
 
   public void setRackCapacity(int rackCapacity) throws IllegalArgumentException {
     if (rackCapacity <= 0) {
-      throw new IllegalArgumentException("Rack capacity must be a positive value.");
+      throw new IllegalArgumentException();
     }
     this.rackCapacity = rackCapacity;
   }
 
-  @NotNull
-  @Contract(pure = true)
   public static Comparator<Candidate> getDefaultOrdering() {
     return (one, two) -> {
       int scoreDiff = two.getScore() - one.getScore();
@@ -95,9 +98,8 @@ public class Generator {
     };
   }
 
-  @NotNull
-  public List<Candidate> compute(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board,
-                                        @Nullable Comparator<Candidate> ordering)
+  public List<Candidate> compute(LinkedList<Tile> rack, BoardSquare[][] board,
+                                        Comparator<Candidate> ordering)
           throws IllegalArgumentException, UnsetTrieException, UnsetRackCapacityException {
     int existingTileCount = validateInput(rack, board);
     int dimensions = board.length;
@@ -139,9 +141,12 @@ public class Generator {
     return candidates;
   }
 
-  private int validateInput(@NotNull LinkedList<Tile> rack, @NotNull BoardSquare[][] board)
+  private int validateInput(LinkedList<Tile> rack, BoardSquare[][] board)
           throws UnsetTrieException, UnsetRackCapacityException,
           InvalidBoardStateException, InvalidRackLengthException {
+    if (rack == null || board == null) {
+      throw new IllegalArgumentException();
+    }
     if (trie == null) {
       throw new UnsetTrieException();
     }
@@ -173,9 +178,9 @@ public class Generator {
   }
 
   private void generate(
-          int hX, int hY, int x, int y, @NotNull LinkedList<Tile> rack, @NotNull LinkedList<CrossedTilePlacement> placed,
-          @NotNull Set<Candidate> all, @NotNull  TrieNode node, @NotNull Direction dir,
-          @NotNull BoardSquare[][] board, int dimensions) {
+          int hX, int hY, int x, int y, LinkedList<Tile> rack, LinkedList<CrossedTilePlacement> placed,
+          Set<Candidate> all,  TrieNode node, Direction dir,
+          BoardSquare[][] board, int dimensions) {
     Tile existingTile = board[y][x].getTile();
     Direction inv = dir.inverse();
     TrieNode childNode;
@@ -247,9 +252,8 @@ public class Generator {
     }
   }
 
-  @Nullable
-  private Set<TilePlacement> computeCrossWord(int sX, int sY, @NotNull Tile toPlace, @NotNull Direction dir,
-                                                     @NotNull BoardSquare[][] board) {
+  private Set<TilePlacement> computeCrossWord(int sX, int sY, Tile toPlace, Direction dir,
+                                                     BoardSquare[][] board) {
     dir = dir.perpendicular();
     if (dir.nextTile(sX, sY, board) == null && dir.inverse().nextTile(sX, sY, board) == null) {
       return Collections.emptySet();
@@ -291,10 +295,8 @@ public class Generator {
     return null;
   }
 
-  @NotNull
-  @Contract("_, _, _ -> new")
-  private Candidate buildCandidate(@NotNull BoardSquare[][] board, @NotNull List<CrossedTilePlacement> placements,
-                                   @NotNull Direction dir) {
+  private Candidate buildCandidate(BoardSquare[][] board, List<CrossedTilePlacement> placements,
+                                   Direction dir) {
     Set<Set<TilePlacement>> crosses = new HashSet<>();
     Set<TilePlacement> primary = new HashSet<>();
 
@@ -313,7 +315,7 @@ public class Generator {
     return new Candidate(primary, crosses, dir.normalize(), score);
   }
 
-  private int computeWordScore(@NotNull BoardSquare[][] board, @NotNull Set<TilePlacement> placements) {
+  private int computeWordScore(BoardSquare[][] board, Set<TilePlacement> placements) {
     int wordMultiplier = 1;
     int newTiles = 0, sum = 0;
     for (TilePlacement placement : placements) {
