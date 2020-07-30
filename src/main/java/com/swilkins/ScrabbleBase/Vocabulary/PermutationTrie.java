@@ -76,10 +76,12 @@ public class PermutationTrie implements Collection<String> {
       BufferedReader reader = new BufferedReader(new FileReader(dictionaryPath.getFile()));
       String word;
       while ((word = reader.readLine()) != null) {
+        word = word.trim();
         if (word.length() > 0) {
-          trie.add(word.trim());
+          trie.add(word);
         }
       }
+      reader.close();
       return trie;
     } catch (FileNotFoundException | NullPointerException e) {
       throw new InvalidTrieSourceException("Unable to locate dictionary file at", dictionaryPath);

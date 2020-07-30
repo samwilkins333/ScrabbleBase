@@ -1,23 +1,38 @@
 package com.swilkins.ScrabbleBase.Vocabulary;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
 public class PermutationTrieTests {
+  private PermutationTrie trie;
+
+  @Before
+  public void initializeTrie() {
+    trie = new PermutationTrie();
+  }
 
   @Test
   public void shouldCorrectlyAddAllWords() {
     URL url = PermutationTrieTests.class.getResource("/ospd4.txt");
     PermutationTrie trie = PermutationTrie.loadFrom(url);
     try {
-      assertTrue(new BufferedReader(new FileReader(url.getFile())).lines().allMatch(trie::contains));
-    } catch (FileNotFoundException e) {
+      BufferedReader reader = new BufferedReader(new FileReader(url.getFile()));
+      Set<String> directImport = reader.lines().collect(Collectors.toSet());
+      reader.close();
+      assertTrue(trie.containsAll(directImport));
+      assertEquals(directImport.size(), trie.size());
+      trie.retainAll(directImport);
+      assertEquals(directImport.size(), trie.size());
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }
@@ -31,7 +46,6 @@ public class PermutationTrieTests {
 
   @Test
   public void removalShouldBehaveCorrectly() {
-    PermutationTrie trie = new PermutationTrie();
     trie.add("hello");
     trie.add("world");
     trie.add("worlds");
@@ -65,7 +79,6 @@ public class PermutationTrieTests {
 
   @Test
   public void clearingResetsSizeValues() {
-    PermutationTrie trie = new PermutationTrie();
     trie.add("hello");
     trie.add("world");
     trie.add("worlds");
@@ -77,7 +90,6 @@ public class PermutationTrieTests {
 
   @Test
   public void addingExistingWordsBehavesCorrectly() {
-    PermutationTrie trie = new PermutationTrie();
     assertTrue(trie.add("one"));
     assertTrue(trie.add("fish"));
     assertTrue(trie.add("two"));
@@ -86,6 +98,16 @@ public class PermutationTrieTests {
     assertFalse(trie.add("fish"));
     assertTrue(trie.add("blue"));
     assertFalse(trie.add("fish"));
+    assertEquals(5, trie.size());
+  }
+
+  @Test
+  public void shouldRejectInvalidWords() {
+    assertFalse(trie.add("Uppercase"));
+    assertFalse(trie.add("word3"));
+    assertFalse(trie.add("special_chars.?>"));
+    assertEquals(0, trie.size());
+    assertEquals(0, trie.getNodeSize());
   }
 
 }
