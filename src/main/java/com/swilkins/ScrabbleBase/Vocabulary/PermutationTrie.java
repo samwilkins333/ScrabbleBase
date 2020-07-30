@@ -27,7 +27,7 @@ public class PermutationTrie implements Collection<String> {
     return nodeSize;
   }
 
-  private boolean addNodes(char[] letters) {
+  private boolean addNodes(@NotNull char[] letters) {
     boolean terminal = false;
     TrieNode node = this.root;
     TrieNode childNode;
@@ -47,7 +47,7 @@ public class PermutationTrie implements Collection<String> {
     return terminal;
   }
 
-  private void removeNodes(char[] letters) {
+  private void removeNodes(@NotNull char[] letters) {
     TrieNode node = this.root;
     int i = 0;
     int count = letters.length;
@@ -88,6 +88,7 @@ public class PermutationTrie implements Collection<String> {
     }
   }
 
+  @NotNull
   private List<String> collect() {
     List<String> collector = new ArrayList<>();
     traverseRecursive(root, "", collector);
