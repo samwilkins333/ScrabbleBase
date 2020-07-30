@@ -24,6 +24,7 @@ public class PermutationTrieTests {
   public void shouldCorrectlyAddAllWords() {
     URL url = PermutationTrieTests.class.getResource("/ospd4.txt");
     PermutationTrie trie = PermutationTrie.loadFrom(url);
+    assertFalse(trie.isEmpty());
     try {
       BufferedReader reader = new BufferedReader(new FileReader(url.getFile()));
       Set<String> directImport = reader.lines().collect(Collectors.toSet());
@@ -57,11 +58,13 @@ public class PermutationTrieTests {
     assertTrue(trie.contains("worlds"));
     assertEquals(3, trie.size());
     assertEquals(3, trie.toArray().length);
+    assertFalse(trie.isEmpty());
 
     trie.remove("world");
 
     assertEquals(2, trie.size());
     assertEquals(2, trie.toArray().length);
+    assertFalse(trie.isEmpty());
     assertTrue(trie.contains("hello"));
     assertFalse(trie.contains("world"));
     assertTrue(trie.contains("worlds"));
@@ -71,6 +74,7 @@ public class PermutationTrieTests {
 
     assertEquals(2, trie.size());
     assertEquals(2, trie.toArray().length);
+    assertFalse(trie.isEmpty());
     assertTrue(trie.contains("hello"));
     assertTrue(trie.contains("world"));
     assertFalse(trie.contains("worlds"));
@@ -81,6 +85,7 @@ public class PermutationTrieTests {
     assertEquals(0, trie.size());
     assertEquals(0, trie.toArray().length);
     assertEquals(0, trie.getNodeSize());
+    assertTrue(trie.isEmpty());
   }
 
   @Test
@@ -90,10 +95,12 @@ public class PermutationTrieTests {
     trie.add("worlds");
     assertEquals(3, trie.size());
     assertEquals(3, trie.toArray().length);
+    assertFalse(trie.isEmpty());
     trie.clear();
     assertEquals(0, trie.size());
     assertEquals(0, trie.toArray().length);
     assertEquals(0, trie.getNodeSize());
+    assertTrue(trie.isEmpty());
   }
 
   @Test
@@ -108,6 +115,7 @@ public class PermutationTrieTests {
     assertFalse(trie.add("fish"));
     assertEquals(5, trie.size());
     assertEquals(5, trie.toArray().length);
+    assertFalse(trie.isEmpty());
   }
 
   @Test
@@ -118,6 +126,7 @@ public class PermutationTrieTests {
     assertEquals(0, trie.size());
     assertEquals(0, trie.toArray().length);
     assertEquals(0, trie.getNodeSize());
+    assertTrue(trie.isEmpty());
   }
 
 }
