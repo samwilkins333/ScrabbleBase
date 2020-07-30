@@ -7,7 +7,8 @@ import org.junit.Test;
 
 import java.util.LinkedList;
 
-import static com.swilkins.ScrabbleBase.Board.Configuration.*;
+import static com.swilkins.ScrabbleBase.Board.Configuration.STANDARD_RACK_CAPACITY;
+import static com.swilkins.ScrabbleBase.Board.Configuration.getStandardBoard;
 import static com.swilkins.ScrabbleBase.Generation.Generator.getDefaultOrdering;
 
 @SuppressWarnings("ConstantConditions")

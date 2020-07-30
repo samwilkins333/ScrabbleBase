@@ -15,7 +15,7 @@ import com.swilkins.ScrabbleBase.Vocabulary.TrieNode;
 
 import java.util.*;
 
-import static com.swilkins.ScrabbleBase.Board.Configuration.*;
+import static com.swilkins.ScrabbleBase.Board.Configuration.STANDARD_BINGO;
 
 /**
  * Contains logic for exhaustive move generation
@@ -99,7 +99,7 @@ public class Generator {
   }
 
   public List<Candidate> compute(LinkedList<Tile> rack, BoardSquare[][] board,
-                                        Comparator<Candidate> ordering)
+                                 Comparator<Candidate> ordering)
           throws IllegalArgumentException, UnsetTrieException, UnsetRackCapacityException {
     int existingTileCount = validateInput(rack, board);
     int dimensions = board.length;
@@ -179,7 +179,7 @@ public class Generator {
 
   private void generate(
           int hX, int hY, int x, int y, LinkedList<Tile> rack, LinkedList<CrossedTilePlacement> placed,
-          Set<Candidate> all,  TrieNode node, Direction dir,
+          Set<Candidate> all, TrieNode node, Direction dir,
           BoardSquare[][] board, int dimensions) {
     Tile existingTile = board[y][x].getTile();
     Direction inv = dir.inverse();
@@ -253,7 +253,7 @@ public class Generator {
   }
 
   private Set<TilePlacement> computeCrossWord(int sX, int sY, Tile toPlace, Direction dir,
-                                                     BoardSquare[][] board) {
+                                              BoardSquare[][] board) {
     dir = dir.perpendicular();
     if (dir.nextTile(sX, sY, board) == null && dir.inverse().nextTile(sX, sY, board) == null) {
       return Collections.emptySet();
