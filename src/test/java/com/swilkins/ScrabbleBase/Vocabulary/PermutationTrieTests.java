@@ -120,9 +120,42 @@ public class PermutationTrieTests {
 
   @Test
   public void shouldRejectInvalidWords() {
+    trie = new PermutationTrie(s -> s.matches("^[a-z]+$"));
     assertFalse(trie.add("Uppercase"));
     assertFalse(trie.add("word3"));
     assertFalse(trie.add("special_chars.?>"));
+    assertEquals(0, trie.size());
+    assertEquals(0, trie.toArray().length);
+    assertEquals(0, trie.getNodeSize());
+    assertTrue(trie.isEmpty());
+  }
+
+  @Test
+  public void shouldAcceptAllWordsWithCustomValidator() {
+    trie = new PermutationTrie(s -> true);
+    assertTrue(trie.add("Uppercase"));
+    assertTrue(trie.add("word3"));
+    assertTrue(trie.add("special_chars.?>"));
+    assertEquals(3, trie.size());
+    assertEquals(3, trie.toArray().length);
+    assertFalse(trie.isEmpty());
+  }
+
+  @Test
+  public void shouldRejectWordsContainingDelimiter() {
+    assertFalse(trie.add("hello#"));
+    assertEquals(0, trie.size());
+    assertEquals(0, trie.toArray().length);
+    assertEquals(0, trie.getNodeSize());
+    assertTrue(trie.isEmpty());
+    trie = new PermutationTrie(':');
+    assertTrue(trie.add("hello#"));
+    assertFalse(trie.add("hel:lo"));
+    assertEquals(1, trie.size());
+    assertEquals(1, trie.toArray().length);
+    assertFalse(trie.isEmpty());
+    assertFalse(trie.remove("hel:lo"));
+    assertTrue(trie.remove("hello#"));
     assertEquals(0, trie.size());
     assertEquals(0, trie.toArray().length);
     assertEquals(0, trie.getNodeSize());

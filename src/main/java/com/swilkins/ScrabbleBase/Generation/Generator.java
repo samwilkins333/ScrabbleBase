@@ -193,7 +193,7 @@ public class Generator {
       TrieNode crossAnchor;
       if ((next = dir.nextCoordinates(x, y, dimensions)) != null) {
         generate(hX, hY, next.getX(), next.getY(), rack, placed, all, child, dir, board, dimensions);
-      } else if ((crossAnchor = child.getChild(PermutationTrie.DELIMITER)) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
+      } else if ((crossAnchor = child.getChild(trie.getDelimiter())) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
         generate(hX, hY, next.getX(), next.getY(), rack, placed, all, crossAnchor, inv, board, dimensions);
       }
     };
@@ -241,7 +241,7 @@ public class Generator {
 
       TrieNode crossAnchor;
       Coordinates next;
-      if (currentPlacedCount > 0 && (crossAnchor = node.getChild(PermutationTrie.DELIMITER)) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
+      if (currentPlacedCount > 0 && (crossAnchor = node.getChild(trie.getDelimiter())) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
         generate(hX, hY, next.getX(), next.getY(), rack, placed, all, crossAnchor, inv, board, dimensions);
       }
     } else if ((childNode = node.getChild(existingTile.getResolvedLetter())) != null) {
@@ -281,7 +281,7 @@ public class Generator {
         x = next.getX();
         y = next.getY();
         tile = next.getTile();
-        if (tile != null && (node = node.getChild(PermutationTrie.DELIMITER)) == null) {
+        if (tile != null && (node = node.getChild(trie.getDelimiter())) == null) {
           break;
         }
       }

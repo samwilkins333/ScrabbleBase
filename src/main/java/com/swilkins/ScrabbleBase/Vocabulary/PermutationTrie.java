@@ -17,7 +17,34 @@ public class PermutationTrie implements Collection<String> {
   private TrieNode root = new TrieNode(TrieNode.ROOT, null, false);
   private int size = 0;
   private int nodeSize = 0;
-  public static final char DELIMITER = '#';
+
+  private static final Predicate<String> DEFAULT_VALIDATOR = s -> true;
+  private Predicate<String> validator;
+
+  private static final char DEFAULT_DELIMITER = '#';
+  private char delimiter;
+
+  private Map<Character, Integer> manifestedAlphabet = new HashMap<>();
+
+  public PermutationTrie(Predicate<String> validator, char delimiter) {
+    this.validator = validator != null ? validator : DEFAULT_VALIDATOR;
+    this.delimiter = delimiter;
+  }
+
+  public PermutationTrie(Predicate<String> validator) {
+    this.validator = validator;
+    this.delimiter = DEFAULT_DELIMITER;
+  }
+
+  public PermutationTrie(char delimiter) {
+    this.validator = DEFAULT_VALIDATOR;
+    this.delimiter = delimiter;
+  }
+
+  public PermutationTrie() {
+    this.validator = DEFAULT_VALIDATOR;
+    this.delimiter = DEFAULT_DELIMITER;
+  }
 
   public TrieNode getRoot() {
     return root;
@@ -25,6 +52,10 @@ public class PermutationTrie implements Collection<String> {
 
   public int getNodeSize() {
     return nodeSize;
+  }
+
+  public char getDelimiter() {
+    return delimiter;
   }
 
   private boolean addNodes(char[] letters) {
@@ -42,6 +73,11 @@ public class PermutationTrie implements Collection<String> {
           childNode.setTerminal(true);
         }
         node = childNode;
+      }
+    }
+    for (char letter : letters) {
+      if (letter != delimiter) {
+        manifestedAlphabet.put(letter, manifestedAlphabet.getOrDefault(letter, 0) + 1);
       }
     }
     return terminal;
@@ -67,6 +103,16 @@ public class PermutationTrie implements Collection<String> {
         nodeSize--;
         toRemove = parent;
       } while (toRemove.getChildCount() == 0 && !toRemove.getTerminal());
+    }
+    for (char letter : letters) {
+      if (letter != delimiter) {
+        int newRefCount = manifestedAlphabet.get(letter) - 1;
+        if (newRefCount > 0) {
+          manifestedAlphabet.put(letter, newRefCount);
+        } else {
+          manifestedAlphabet.remove(letter);
+        }
+      }
     }
   }
 
@@ -97,7 +143,7 @@ public class PermutationTrie implements Collection<String> {
   }
 
   private void traverseRecursive(TrieNode current, String accumulated, List<String> collector) {
-    for (char letter : Alphabet.letters) {
+    for (char letter : manifestedAlphabet.keySet()) {
       TrieNode child = current.getChild(letter);
       if (child != null) {
         if (child.getTerminal()) {
@@ -170,10 +216,7 @@ public class PermutationTrie implements Collection<String> {
 
   @Override
   public boolean add(String s) {
-    if (contains(s)) {
-      return false;
-    }
-    if (!s.matches("^[a-z]+$")) {
+    if (contains(s) || !validator.test(s) || s.contains(String.valueOf(delimiter))) {
       return false;
     }
     char[] letters = s.toCharArray();
@@ -186,13 +229,13 @@ public class PermutationTrie implements Collection<String> {
       int currentIndex = count - 1;
       char[] variation = new char[count + 1];
       System.arraycopy(s.substring(1).toCharArray(), 0, variation, 0, currentIndex);
-      variation[currentIndex] = DELIMITER;
+      variation[currentIndex] = delimiter;
       variation[count] = letters[0];
       while (currentIndex > 0) {
         this.addNodes(variation);
         variation[currentIndex--] = variation[0];
         if (currentIndex >= 0) System.arraycopy(variation, 1, variation, 0, currentIndex);
-        variation[currentIndex] = DELIMITER;
+        variation[currentIndex] = delimiter;
       }
     }
     return true;
@@ -213,13 +256,13 @@ public class PermutationTrie implements Collection<String> {
       int currentIndex = count - 1;
       char[] variation = new char[count + 1];
       System.arraycopy(s.substring(1).toCharArray(), 0, variation, 0, currentIndex);
-      variation[currentIndex] = DELIMITER;
+      variation[currentIndex] = delimiter;
       variation[count] = letters[0];
       while (currentIndex > 0) {
         this.removeNodes(variation);
         variation[currentIndex--] = variation[0];
         if (currentIndex >= 0) System.arraycopy(variation, 1, variation, 0, currentIndex);
-        variation[currentIndex] = DELIMITER;
+        variation[currentIndex] = delimiter;
       }
     }
     return true;
