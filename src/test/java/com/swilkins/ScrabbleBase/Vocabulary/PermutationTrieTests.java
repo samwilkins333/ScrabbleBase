@@ -30,7 +30,15 @@ public class PermutationTrieTests {
 
   @Test
   public void shouldCorrectlyAddAllWords() {
-    PermutationTrie trie = new PermutationTrie(LOWERCASE);
+    trieShouldCorrectlyAddAllWords(new PermutationTrie(LOWERCASE));
+  }
+
+  @Test
+  public void superShouldCorrectlyAddAllWords() {
+    trieShouldCorrectlyAddAllWords(new Trie(LOWERCASE));
+  }
+
+  private void trieShouldCorrectlyAddAllWords(Trie trie) {
     assertTrue(trie.loadFrom(dictionary, String::trim));
     assertFalse(trie.isEmpty());
     try {

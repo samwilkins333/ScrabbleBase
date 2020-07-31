@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public abstract class Trie implements Collection<String> {
+public class Trie implements Collection<String> {
 
   protected TrieNode root = new TrieNode(TrieNode.ROOT, null, false);
   private int size = 0;
