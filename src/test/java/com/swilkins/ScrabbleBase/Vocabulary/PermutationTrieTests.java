@@ -1,6 +1,7 @@
 package com.swilkins.ScrabbleBase.Vocabulary;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -10,10 +11,17 @@ import java.net.URL;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie.LOWERCASE;
 import static org.junit.Assert.*;
 
 public class PermutationTrieTests {
   private PermutationTrie trie;
+  private static URL dictionary;
+
+  @BeforeClass
+  public static void resolveDictionary() {
+    dictionary = PermutationTrieTests.class.getResource("/ospd4.txt");
+  }
 
   @Before
   public void initializeTrie() {
@@ -22,15 +30,16 @@ public class PermutationTrieTests {
 
   @Test
   public void shouldCorrectlyAddAllWords() {
-    URL url = PermutationTrieTests.class.getResource("/ospd4.txt");
-    PermutationTrie trie = PermutationTrie.loadFrom(url);
+    PermutationTrie trie = new PermutationTrie(LOWERCASE);
+    assertTrue(trie.loadFrom(dictionary, String::trim));
     assertFalse(trie.isEmpty());
     try {
-      BufferedReader reader = new BufferedReader(new FileReader(url.getFile()));
+      BufferedReader reader = new BufferedReader(new FileReader(dictionary.getFile()));
       Set<String> directImport = reader.lines().collect(Collectors.toSet());
       reader.close();
       int quota = directImport.size();
       assertTrue(trie.containsAll(directImport));
+      assertTrue(directImport.containsAll(trie));
       assertEquals(quota, trie.toArray().length);
       assertEquals(quota, trie.size());
       trie.retainAll(directImport);
@@ -42,7 +51,8 @@ public class PermutationTrieTests {
 
   @Test
   public void shouldNotValidateNonsense() {
-    PermutationTrie trie = PermutationTrie.loadFrom(PermutationTrieTests.class.getResource("/ospd4.txt"));
+    PermutationTrie trie = new PermutationTrie(LOWERCASE);
+    assertTrue(trie.loadFrom(dictionary, String::trim));
     assertFalse(trie.contains(""));
     assertFalse(trie.contains("alsdkbhb"));
   }
@@ -120,7 +130,7 @@ public class PermutationTrieTests {
 
   @Test
   public void shouldRejectInvalidWords() {
-    trie = new PermutationTrie(s -> s.matches("^[a-z]+$"));
+    trie = new PermutationTrie(LOWERCASE);
     assertFalse(trie.add("Uppercase"));
     assertFalse(trie.add("word3"));
     assertFalse(trie.add("special_chars.?>"));
@@ -156,6 +166,28 @@ public class PermutationTrieTests {
     assertFalse(trie.isEmpty());
     assertFalse(trie.remove("hel:lo"));
     assertTrue(trie.remove("hello#"));
+    assertEquals(0, trie.size());
+    assertEquals(0, trie.toArray().length);
+    assertEquals(0, trie.getNodeSize());
+    assertTrue(trie.isEmpty());
+  }
+
+  @Test
+  public void shouldHandleWhitespaceAppropriately() {
+    assertTrue(trie.add("hello  \nworld"));
+    assertEquals(1, trie.size());
+    assertEquals(1, trie.toArray().length);
+    assertFalse(trie.isEmpty());
+    assertTrue(trie.contains("hello  \nworld"));
+    assertTrue(trie.add("normal"));
+    assertEquals(2, trie.size());
+    assertEquals(2, trie.toArray().length);
+    assertFalse(trie.isEmpty());
+    assertTrue(trie.remove("hello  \nworld"));
+    assertEquals(1, trie.size());
+    assertEquals(1, trie.toArray().length);
+    assertFalse(trie.isEmpty());
+    assertTrue(trie.remove("normal"));
     assertEquals(0, trie.size());
     assertEquals(0, trie.toArray().length);
     assertEquals(0, trie.getNodeSize());

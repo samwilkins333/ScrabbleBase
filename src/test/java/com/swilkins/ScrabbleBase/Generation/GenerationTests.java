@@ -16,6 +16,7 @@ import java.util.List;
 
 import static com.swilkins.ScrabbleBase.Board.Configuration.*;
 import static com.swilkins.ScrabbleBase.Generation.Generator.getDefaultOrdering;
+import static com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie.LOWERCASE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -26,8 +27,10 @@ public class GenerationTests {
 
   @BeforeClass
   public static void configureGenerator() {
-    URL dictionaryPath = GenerationTests.class.getResource("/ospd4.txt");
-    generator = new Generator(PermutationTrie.loadFrom(dictionaryPath), STANDARD_RACK_CAPACITY);
+    URL dictionary = GenerationTests.class.getResource("/ospd4.txt");
+    PermutationTrie trie = new PermutationTrie(LOWERCASE);
+    trie.loadFrom(dictionary, String::trim);
+    generator = new Generator(trie, STANDARD_RACK_CAPACITY);
   }
 
   @Before
