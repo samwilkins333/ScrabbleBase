@@ -44,6 +44,8 @@ public class PermutationTrieTests {
       assertEquals(quota, trie.size());
       trie.retainAll(directImport);
       assertEquals(quota, trie.size());
+      directImport.retainAll(trie);
+      assertEquals(quota, directImport.size());
     } catch (IOException e) {
       e.printStackTrace();
     }

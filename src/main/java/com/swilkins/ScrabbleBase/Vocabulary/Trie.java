@@ -41,6 +41,23 @@ public abstract class Trie implements Collection<String> {
     return nodeSize;
   }
 
+  public boolean loadFrom(URL dictionaryPath, InputTransformer transformer) throws InvalidTrieSourceException {
+    try {
+      BufferedReader reader = new BufferedReader(new FileReader(dictionaryPath.getFile()));
+      Stream<String> input = reader.lines().distinct();
+      if (transformer != null) {
+        input = input.map(transformer::transform);
+      }
+      boolean result = input.allMatch(this::add);
+      reader.close();
+      return result;
+    } catch (FileNotFoundException | NullPointerException e) {
+      throw new InvalidTrieSourceException("Unable to locate dictionary file at", dictionaryPath);
+    } catch (IOException e) {
+      throw new InvalidTrieSourceException("Encountered error while reading from", dictionaryPath);
+    }
+  }
+
   protected boolean addNodes(char[] letters) {
     boolean terminal = false;
     TrieNode node = this.root;
@@ -92,23 +109,6 @@ public abstract class Trie implements Collection<String> {
       } else {
         manifestedAlphabet.remove(letter);
       }
-    }
-  }
-
-  public boolean loadFrom(URL dictionaryPath, InputTransformer transformer) throws InvalidTrieSourceException {
-    try {
-      BufferedReader reader = new BufferedReader(new FileReader(dictionaryPath.getFile()));
-      Stream<String> input = reader.lines().distinct();
-      if (transformer != null) {
-        input = input.map(transformer::transform);
-      }
-      boolean result = input.allMatch(this::add);
-      reader.close();
-      return result;
-    } catch (FileNotFoundException | NullPointerException e) {
-      throw new InvalidTrieSourceException("Unable to locate dictionary file at", dictionaryPath);
-    } catch (IOException e) {
-      throw new InvalidTrieSourceException("Encountered error while reading from", dictionaryPath);
     }
   }
 
