@@ -76,40 +76,30 @@ public class PermutationTrieTests {
 
   @Test
   public void removalShouldBehaveCorrectly() {
-    trie.add("hello");
-    trie.add("world");
-    trie.add("worlds");
-
-    assertTrue(trie.contains("hello"));
-    assertTrue(trie.contains("world"));
-    assertTrue(trie.contains("worlds"));
+    assertTrue(trie.addAll("hello", "world", "worlds"));
+    assertTrue(trie.containsAll("hello", "world", "worlds"));
     assertNonZeroSize(trie, 3);
 
     trie.remove("world");
 
     assertNonZeroSize(trie, 2);
-    assertTrue(trie.contains("hello"));
+    assertTrue(trie.containsAll("hello", "worlds"));
     assertFalse(trie.contains("world"));
-    assertTrue(trie.contains("worlds"));
 
     trie.add("world");
     trie.remove("worlds");
 
     assertNonZeroSize(trie, 2);
-    assertTrue(trie.contains("hello"));
-    assertTrue(trie.contains("world"));
+    assertTrue(trie.containsAll("hello", "world"));
     assertFalse(trie.contains("worlds"));
 
-    trie.remove("hello");
-    trie.remove("world");
+    assertTrue(trie.removeAll("hello", "world"));
     assertEmpty(trie);
   }
 
   @Test
   public void clearingResetsSizeValues() {
-    trie.add("hello");
-    trie.add("world");
-    trie.add("worlds");
+    assertTrue(trie.addAll("hello", "world", "worlds"));
     assertNonZeroSize(trie, 3);
     trie.clear();
     assertEmpty(trie);
@@ -117,9 +107,7 @@ public class PermutationTrieTests {
 
   @Test
   public void addingExistingWordsBehavesCorrectly() {
-    assertTrue(trie.add("one"));
-    assertTrue(trie.add("fish"));
-    assertTrue(trie.add("two"));
+    assertTrue(trie.addAll("one", "fish", "two"));
     assertFalse(trie.add("fish"));
     assertTrue(trie.add("red"));
     assertFalse(trie.add("fish"));
@@ -139,9 +127,7 @@ public class PermutationTrieTests {
   @Test
   public void shouldAcceptAllWordsWithCustomValidator() {
     trie = new PermutationTrie(s -> true);
-    assertTrue(trie.add("Uppercase"));
-    assertTrue(trie.add("word3"));
-    assertTrue(trie.add("special_chars.?>"));
+    assertTrue(trie.addAll("Uppercase", "word3", "special_chars.?>"));
     assertNonZeroSize(trie, 3);
   }
 

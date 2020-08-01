@@ -234,14 +234,34 @@ public class Trie implements Collection<String> {
     return c.stream().allMatch(this::contains);
   }
 
+  public final boolean containsAll(String... c) {
+    boolean result = true;
+    for (String s : c) {
+      result &= this.contains(s);
+    }
+    return result;
+  }
+
   @Override
   public boolean addAll(@NotNull Collection<? extends String> c) {
     return c.stream().allMatch(this::add);
   }
 
+  public boolean addAll(String... c) {
+    return Collections.addAll(this, c);
+  }
+
   @Override
   public boolean removeAll(@NotNull Collection<?> c) {
     return c.stream().allMatch(this::remove);
+  }
+
+  public boolean removeAll(String... c) {
+    boolean result = true;
+    for (String s : c) {
+      result &= this.remove(s);
+    }
+    return result;
   }
 
   @Override
