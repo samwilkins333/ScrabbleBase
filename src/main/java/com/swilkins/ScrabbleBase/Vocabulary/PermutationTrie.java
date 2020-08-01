@@ -30,7 +30,9 @@ public class PermutationTrie extends Trie {
     return this.delimiter;
   }
 
-  interface NodeMutator { boolean mutate(char[] letters); }
+  interface NodeMutator {
+    boolean mutate(char[] letters);
+  }
 
   @Override
   public boolean addImpl(String s) {
