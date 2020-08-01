@@ -87,10 +87,8 @@ public class Trie implements Collection<String> {
 
   protected boolean removeNodes(@NotNull char[] letters) {
     TrieNode node = this.root;
-    int i = 0;
-    int count = letters.length;
-    while (i < count) {
-      node = node.getChild(letters[i++]);
+    for (char letter : letters) {
+      node = node.getChild(letter);
     }
     if (node.getChildCount() > 0) {
       node.setTerminal(false);
