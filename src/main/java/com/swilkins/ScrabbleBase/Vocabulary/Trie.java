@@ -33,6 +33,8 @@ public class Trie implements Collection<String> {
     this.validator = DEFAULT_VALIDATOR;
   }
 
+  public interface InputTransformer { String transform(String raw); }
+
   public TrieNode getRoot() {
     return root;
   }
@@ -81,7 +83,7 @@ public class Trie implements Collection<String> {
     return terminal;
   }
 
-  protected void removeNodes(@NotNull char[] letters) {
+  protected boolean removeNodes(@NotNull char[] letters) {
     TrieNode node = this.root;
     int i = 0;
     int count = letters.length;
@@ -110,6 +112,7 @@ public class Trie implements Collection<String> {
         manifestedAlphabet.remove(letter);
       }
     }
+    return true;
   }
 
   protected List<String> collect() {
@@ -212,13 +215,16 @@ public class Trie implements Collection<String> {
     if (!contains(o)) {
       return false;
     }
-    this.removeImpl((String) o);
-    size--;
-    return true;
+    if (this.removeImpl((String) o)) {
+      size--;
+      return true;
+    }
+    return false;
   }
 
-  protected void removeImpl(String s) {
+  protected boolean removeImpl(String s) {
     this.removeNodes(s.toCharArray());
+    return true;
   }
 
   @Override

@@ -30,36 +30,26 @@ public class PermutationTrie extends Trie {
     return delimiter;
   }
 
+  interface NodeMutator { boolean mutate(char[] letters); }
+
   @Override
   public boolean addImpl(String s) {
     if (s.contains(String.valueOf(delimiter))) {
       return false;
     }
-    char[] letters = s.toCharArray();
-    boolean result = this.addNodes(letters);
-
-    int count = letters.length;
-    if (count > 1) {
-      int currentIndex = count - 1;
-      char[] variation = new char[count + 1];
-      System.arraycopy(s.substring(1).toCharArray(), 0, variation, 0, currentIndex);
-      variation[currentIndex] = delimiter;
-      variation[count] = letters[0];
-      while (currentIndex > 0) {
-        result &= this.addNodes(variation);
-        variation[currentIndex--] = variation[0];
-        if (currentIndex >= 0) System.arraycopy(variation, 1, variation, 0, currentIndex);
-        variation[currentIndex] = delimiter;
-      }
-    }
+    boolean result = executeWithPermutations(this::addNodes, s);
     this.manifestedAlphabet.remove(delimiter);
     return result;
   }
 
   @Override
-  public void removeImpl(String s) {
+  public boolean removeImpl(String s) {
+    return executeWithPermutations(this::removeNodes, s);
+  }
+
+  private boolean executeWithPermutations(NodeMutator mutator, String s) {
     char[] letters = s.toCharArray();
-    this.removeNodes(letters);
+    boolean result = mutator.mutate(letters);
 
     int count = letters.length;
     if (count > 1) {
@@ -69,12 +59,14 @@ public class PermutationTrie extends Trie {
       variation[currentIndex] = delimiter;
       variation[count] = letters[0];
       while (currentIndex > 0) {
-        this.removeNodes(variation);
+        result &= mutator.mutate(variation);
         variation[currentIndex--] = variation[0];
         if (currentIndex >= 0) System.arraycopy(variation, 1, variation, 0, currentIndex);
         variation[currentIndex] = delimiter;
       }
     }
+
+    return result;
   }
 
 }

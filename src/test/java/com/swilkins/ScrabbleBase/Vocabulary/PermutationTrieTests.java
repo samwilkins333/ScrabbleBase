@@ -28,6 +28,19 @@ public class PermutationTrieTests {
     trie = new PermutationTrie();
   }
 
+  private void assertEmpty(Trie trie) {
+    assertEquals(0, trie.size());
+    assertEquals(0, trie.toArray().length);
+    assertEquals(0, trie.getNodeSize());
+    assertTrue(trie.isEmpty());
+  }
+
+  private void assertNonZeroSize(Trie trie, int size) {
+    assertEquals(size, trie.size());
+    assertEquals(size, trie.toArray().length);
+    assertFalse(trie.isEmpty());
+  }
+
   @Test
   public void shouldCorrectlyAddAllWords() {
     trieShouldCorrectlyAddAllWords(new PermutationTrie());
@@ -75,15 +88,11 @@ public class PermutationTrieTests {
     assertTrue(trie.contains("hello"));
     assertTrue(trie.contains("world"));
     assertTrue(trie.contains("worlds"));
-    assertEquals(3, trie.size());
-    assertEquals(3, trie.toArray().length);
-    assertFalse(trie.isEmpty());
+    assertNonZeroSize(trie, 3);
 
     trie.remove("world");
 
-    assertEquals(2, trie.size());
-    assertEquals(2, trie.toArray().length);
-    assertFalse(trie.isEmpty());
+    assertNonZeroSize(trie, 2);
     assertTrue(trie.contains("hello"));
     assertFalse(trie.contains("world"));
     assertTrue(trie.contains("worlds"));
@@ -91,20 +100,14 @@ public class PermutationTrieTests {
     trie.add("world");
     trie.remove("worlds");
 
-    assertEquals(2, trie.size());
-    assertEquals(2, trie.toArray().length);
-    assertFalse(trie.isEmpty());
+    assertNonZeroSize(trie, 2);
     assertTrue(trie.contains("hello"));
     assertTrue(trie.contains("world"));
     assertFalse(trie.contains("worlds"));
 
     trie.remove("hello");
     trie.remove("world");
-
-    assertEquals(0, trie.size());
-    assertEquals(0, trie.toArray().length);
-    assertEquals(0, trie.getNodeSize());
-    assertTrue(trie.isEmpty());
+    assertEmpty(trie);
   }
 
   @Test
@@ -112,14 +115,9 @@ public class PermutationTrieTests {
     trie.add("hello");
     trie.add("world");
     trie.add("worlds");
-    assertEquals(3, trie.size());
-    assertEquals(3, trie.toArray().length);
-    assertFalse(trie.isEmpty());
+    assertNonZeroSize(trie, 3);
     trie.clear();
-    assertEquals(0, trie.size());
-    assertEquals(0, trie.toArray().length);
-    assertEquals(0, trie.getNodeSize());
-    assertTrue(trie.isEmpty());
+    assertEmpty(trie);
   }
 
   @Test
@@ -132,9 +130,7 @@ public class PermutationTrieTests {
     assertFalse(trie.add("fish"));
     assertTrue(trie.add("blue"));
     assertFalse(trie.add("fish"));
-    assertEquals(5, trie.size());
-    assertEquals(5, trie.toArray().length);
-    assertFalse(trie.isEmpty());
+    assertNonZeroSize(trie, 5);
   }
 
   @Test
@@ -142,10 +138,7 @@ public class PermutationTrieTests {
     assertFalse(trie.add("Uppercase"));
     assertFalse(trie.add("word3"));
     assertFalse(trie.add("special_chars.?>"));
-    assertEquals(0, trie.size());
-    assertEquals(0, trie.toArray().length);
-    assertEquals(0, trie.getNodeSize());
-    assertTrue(trie.isEmpty());
+    assertEmpty(trie);
   }
 
   @Test
@@ -154,53 +147,34 @@ public class PermutationTrieTests {
     assertTrue(trie.add("Uppercase"));
     assertTrue(trie.add("word3"));
     assertTrue(trie.add("special_chars.?>"));
-    assertEquals(3, trie.size());
-    assertEquals(3, trie.toArray().length);
-    assertFalse(trie.isEmpty());
+    assertNonZeroSize(trie, 3);
   }
 
   @Test
   public void shouldRejectWordsContainingDelimiter() {
     assertFalse(trie.add("hello#"));
-    assertEquals(0, trie.size());
-    assertEquals(0, trie.toArray().length);
-    assertEquals(0, trie.getNodeSize());
-    assertTrue(trie.isEmpty());
+    assertEmpty(trie);
     trie = new PermutationTrie(s -> true, ':');
     assertTrue(trie.add("hello#"));
     assertFalse(trie.add("hel:lo"));
-    assertEquals(1, trie.size());
-    assertEquals(1, trie.toArray().length);
-    assertFalse(trie.isEmpty());
+    assertNonZeroSize(trie, 1);
     assertFalse(trie.remove("hel:lo"));
     assertTrue(trie.remove("hello#"));
-    assertEquals(0, trie.size());
-    assertEquals(0, trie.toArray().length);
-    assertEquals(0, trie.getNodeSize());
-    assertTrue(trie.isEmpty());
+    assertEmpty(trie);
   }
 
   @Test
   public void shouldHandleWhitespaceAppropriately() {
     trie = new PermutationTrie(s -> s.matches("^[a-z\\s]+$"));
     assertTrue(trie.add("hello  \nworld"));
-    assertEquals(1, trie.size());
-    assertEquals(1, trie.toArray().length);
-    assertFalse(trie.isEmpty());
+    assertNonZeroSize(trie, 1);
     assertTrue(trie.contains("hello  \nworld"));
     assertTrue(trie.add("normal"));
-    assertEquals(2, trie.size());
-    assertEquals(2, trie.toArray().length);
-    assertFalse(trie.isEmpty());
+    assertNonZeroSize(trie, 2);
     assertTrue(trie.remove("hello  \nworld"));
-    assertEquals(1, trie.size());
-    assertEquals(1, trie.toArray().length);
-    assertFalse(trie.isEmpty());
+    assertNonZeroSize(trie, 1);
     assertTrue(trie.remove("normal"));
-    assertEquals(0, trie.size());
-    assertEquals(0, trie.toArray().length);
-    assertEquals(0, trie.getNodeSize());
-    assertTrue(trie.isEmpty());
+    assertEmpty(trie);
   }
 
 }
