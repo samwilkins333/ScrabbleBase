@@ -1,5 +1,6 @@
 package com.swilkins.ScrabbleBase.Vocabulary;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -68,7 +69,7 @@ public class PermutationTrieTests {
       directImport.retainAll(trie);
       assertEquals(quota, directImport.size());
     } catch (IOException e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
   }
 
