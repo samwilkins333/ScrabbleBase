@@ -30,7 +30,7 @@ public class PermutationTrieTests {
 
   @Test
   public void shouldCorrectlyAddAllWords() {
-    trieShouldCorrectlyAddAllWords(new PermutationTrie(LOWERCASE));
+    trieShouldCorrectlyAddAllWords(new PermutationTrie());
   }
 
   @Test
@@ -61,7 +61,6 @@ public class PermutationTrieTests {
 
   @Test
   public void shouldNotValidateNonsense() {
-    PermutationTrie trie = new PermutationTrie(LOWERCASE);
     assertTrue(trie.loadFrom(dictionary, String::trim));
     assertFalse(trie.contains(""));
     assertFalse(trie.contains("alsdkbhb"));
@@ -140,7 +139,6 @@ public class PermutationTrieTests {
 
   @Test
   public void shouldRejectInvalidWords() {
-    trie = new PermutationTrie(LOWERCASE);
     assertFalse(trie.add("Uppercase"));
     assertFalse(trie.add("word3"));
     assertFalse(trie.add("special_chars.?>"));
@@ -168,7 +166,7 @@ public class PermutationTrieTests {
     assertEquals(0, trie.toArray().length);
     assertEquals(0, trie.getNodeSize());
     assertTrue(trie.isEmpty());
-    trie = new PermutationTrie(':');
+    trie = new PermutationTrie(s -> true, ':');
     assertTrue(trie.add("hello#"));
     assertFalse(trie.add("hel:lo"));
     assertEquals(1, trie.size());
@@ -184,6 +182,7 @@ public class PermutationTrieTests {
 
   @Test
   public void shouldHandleWhitespaceAppropriately() {
+    trie = new PermutationTrie(s -> s.matches("^[a-z\\s]+$"));
     assertTrue(trie.add("hello  \nworld"));
     assertEquals(1, trie.size());
     assertEquals(1, trie.toArray().length);

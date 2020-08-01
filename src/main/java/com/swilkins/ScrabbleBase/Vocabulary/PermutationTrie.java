@@ -17,12 +17,12 @@ public class PermutationTrie extends Trie {
   }
 
   public PermutationTrie(char delimiter) {
-    super();
+    super(LOWERCASE);
     this.delimiter = delimiter;
   }
 
   public PermutationTrie() {
-    super();
+    super(LOWERCASE);
     this.delimiter = DEFAULT_DELIMITER;
   }
 
