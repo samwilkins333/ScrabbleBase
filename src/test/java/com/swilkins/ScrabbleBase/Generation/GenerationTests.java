@@ -10,8 +10,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.swilkins.ScrabbleBase.Board.Configuration.*;
 import static com.swilkins.ScrabbleBase.Generation.Generator.getDefaultOrdering;
@@ -70,8 +73,7 @@ public class GenerationTests {
     Candidate computedOptimal = generator.compute(rack, board, getDefaultOrdering()).get(0);
     rack.removeLast();
 
-    LinkedList<Candidate> collector = new LinkedList<>();
-
+    List<Candidate> collector = new ArrayList<>();
     for (char letter : generator.getTrie().getAlphabet()) {
       rack.add(new Tile(letter, 0, null));
       collector.add(generator.compute(rack, board, getDefaultOrdering()).get(0));
@@ -79,7 +81,43 @@ public class GenerationTests {
     }
     collector.sort(getDefaultOrdering());
 
-    Candidate collectedOptimal = collector.get(0);
+    compare(computedOptimal, collector.get(0));
+  }
+
+  @Test
+  public void additionalBlankSelectionBehaviorTest() {
+    board[7][3].setTile(getStandardTile('b'));
+    board[7][4].setTile(getStandardTile('r'));
+    board[7][5].setTile(getStandardTile('a'));
+    board[7][6].setTile(getStandardTile('i'));
+    board[7][7].setTile(getStandardTile('d'));
+
+    rack.addAllFromLetters("tieoat");
+
+    rack.addFromLetter(Tile.BLANK);
+    List<Candidate> computedCandidates = generator.compute(rack, board, getDefaultOrdering());
+    rack.removeLast();
+
+    List<Candidate> collector = new ArrayList<>();
+    for (char letter : generator.getTrie().getAlphabet()) {
+      rack.add(new Tile(letter, 0, null));
+      collector.add(generator.compute(rack, board, getDefaultOrdering()).get(0));
+      rack.removeLast();
+    }
+    collector.sort(getDefaultOrdering());
+
+    compare(computedCandidates.get(0), collector.get(0));
+
+    assertTrue(Stream.of(
+            "betta", "abet", "citrate", "teratoid", "iterate",
+            "feta", "garotte", "athetoid", "biotite", "jiao",
+            "keto", "totable", "amoretti", "tetanoid", "bootie",
+            "patriot", "qat", "teratoid", "toastier", "attrite",
+            "outrate", "rotative", "bawtie", "axite", "yett", "baize")
+            .allMatch(w -> computedCandidates.stream().anyMatch(c -> c.getSerialized().get(0).equals(w))));
+  }
+
+  private void compare(Candidate computedOptimal, Candidate collectedOptimal) {
     assertEquals(computedOptimal.getPrimary().size(), collectedOptimal.getPrimary().size());
     assertEquals(computedOptimal.getDirection(), collectedOptimal.getDirection());
     assertEquals(computedOptimal.getScore(), collectedOptimal.getScore());
