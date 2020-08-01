@@ -21,7 +21,7 @@ public class Trie implements Collection<String> {
   private static final Predicate<String> DEFAULT_VALIDATOR = s -> true;
   protected Predicate<String> validator;
 
-  protected Map<Character, Integer> manifestedAlphabet = new HashMap<>();
+  protected Map<Character, Integer> alphabet = new HashMap<>();
 
   public static final Predicate<String> LOWERCASE = s -> s.matches("^[a-z]+$");
 
@@ -33,14 +33,16 @@ public class Trie implements Collection<String> {
     this.validator = DEFAULT_VALIDATOR;
   }
 
-  public interface InputTransformer { String transform(String raw); }
-
   public TrieNode getRoot() {
-    return root;
+    return this.root;
   }
 
   public int getNodeSize() {
-    return nodeSize;
+    return this.nodeSize;
+  }
+
+  public Set<Character> getAlphabet() {
+    return this.alphabet.keySet();
   }
 
   public boolean loadFrom(URL dictionaryPath, InputTransformer transformer) throws InvalidTrieSourceException {
@@ -78,7 +80,7 @@ public class Trie implements Collection<String> {
       }
     }
     for (char letter : letters) {
-      manifestedAlphabet.put(letter, manifestedAlphabet.getOrDefault(letter, 0) + 1);
+      this.alphabet.put(letter, this.alphabet.getOrDefault(letter, 0) + 1);
     }
     return terminal;
   }
@@ -100,16 +102,16 @@ public class Trie implements Collection<String> {
           break;
         }
         parent.removeChild(toRemove.getLetter());
-        nodeSize--;
+        this.nodeSize--;
         toRemove = parent;
       } while (toRemove.getChildCount() == 0 && !toRemove.getTerminal());
     }
     for (char letter : letters) {
-      int newRefCount = manifestedAlphabet.getOrDefault(letter, 1) - 1;
+      int newRefCount = this.alphabet.getOrDefault(letter, 1) - 1;
       if (newRefCount > 0) {
-        manifestedAlphabet.put(letter, newRefCount);
+        this.alphabet.put(letter, newRefCount);
       } else {
-        manifestedAlphabet.remove(letter);
+        this.alphabet.remove(letter);
       }
     }
     return true;
@@ -117,12 +119,12 @@ public class Trie implements Collection<String> {
 
   protected List<String> collect() {
     List<String> collector = new ArrayList<>();
-    traverseRecursive(root, "", collector);
+    traverseRecursive(this.root, "", collector);
     return collector;
   }
 
   private void traverseRecursive(TrieNode current, String accumulated, List<String> collector) {
-    for (char letter : manifestedAlphabet.keySet()) {
+    for (char letter : this.getAlphabet()) {
       TrieNode child = current.getChild(letter);
       if (child != null) {
         String updated = accumulated + letter;
@@ -136,17 +138,17 @@ public class Trie implements Collection<String> {
 
   public void clear() {
     this.root = new TrieNode(TrieNode.ROOT, null, false);
-    size = nodeSize = 0;
+    this.size = this.nodeSize = 0;
   }
 
   @Override
   public int size() {
-    return size;
+    return this.size;
   }
 
   @Override
   public boolean isEmpty() {
-    return size == 0;
+    return this.size == 0;
   }
 
   @Override
@@ -173,34 +175,34 @@ public class Trie implements Collection<String> {
   @NotNull
   @Override
   public Iterator<String> iterator() {
-    return collect().iterator();
+    return this.collect().iterator();
   }
 
   @Override
   public void forEach(Consumer<? super String> action) {
-    collect().forEach(action);
+    this.collect().forEach(action);
   }
 
   @NotNull
   @Override
   public Object[] toArray() {
-    return collect().toArray();
+    return this.collect().toArray();
   }
 
   @NotNull
   @Override
   @SuppressWarnings("SuspiciousToArrayCall")
   public <T> T[] toArray(@NotNull T[] a) {
-    return collect().toArray(a);
+    return this.collect().toArray(a);
   }
 
   @Override
   public final boolean add(String s) {
-    if (s.isEmpty() || contains(s) || !validator.test(s)) {
+    if (s.isEmpty() || contains(s) || !this.validator.test(s)) {
       return false;
     }
     if (this.addImpl(s)) {
-      size++;
+      this.size++;
       return true;
     }
     return false;
@@ -212,11 +214,11 @@ public class Trie implements Collection<String> {
 
   @Override
   public final boolean remove(Object o) {
-    if (!contains(o)) {
+    if (!this.contains(o)) {
       return false;
     }
     if (this.removeImpl((String) o)) {
-      size--;
+      this.size--;
       return true;
     }
     return false;
@@ -244,27 +246,27 @@ public class Trie implements Collection<String> {
 
   @Override
   public boolean removeIf(Predicate<? super String> filter) {
-    return collect().stream().filter(filter).allMatch(this::remove);
+    return this.collect().stream().filter(filter).allMatch(this::remove);
   }
 
   @Override
   public boolean retainAll(@NotNull Collection<?> c) {
-    return collect().stream().filter(s -> !c.contains(s)).allMatch(this::remove);
+    return this.collect().stream().filter(s -> !c.contains(s)).allMatch(this::remove);
   }
 
   @Override
   public Spliterator<String> spliterator() {
-    return collect().spliterator();
+    return this.collect().spliterator();
   }
 
   @Override
   public Stream<String> stream() {
-    return collect().stream();
+    return this.collect().stream();
   }
 
   @Override
   public Stream<String> parallelStream() {
-    return collect().parallelStream();
+    return this.collect().parallelStream();
   }
 
 }

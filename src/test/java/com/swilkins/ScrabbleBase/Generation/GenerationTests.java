@@ -4,7 +4,6 @@ import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import com.swilkins.ScrabbleBase.Board.State.BoardSquare;
 import com.swilkins.ScrabbleBase.Board.State.Rack;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
-import com.swilkins.ScrabbleBase.Vocabulary.Alphabet;
 import com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -73,7 +72,7 @@ public class GenerationTests {
 
     LinkedList<Candidate> collector = new LinkedList<>();
 
-    for (char letter : Alphabet.letters) {
+    for (char letter : generator.getTrie().getAlphabet()) {
       rack.add(new Tile(letter, 0, null));
       collector.add(generator.compute(rack, board, getDefaultOrdering()).get(0));
       rack.removeLast();

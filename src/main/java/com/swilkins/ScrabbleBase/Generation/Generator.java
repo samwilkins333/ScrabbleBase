@@ -9,7 +9,6 @@ import com.swilkins.ScrabbleBase.Generation.Exception.InvalidBoardStateException
 import com.swilkins.ScrabbleBase.Generation.Exception.InvalidRackLengthException;
 import com.swilkins.ScrabbleBase.Generation.Exception.UnsetRackCapacityException;
 import com.swilkins.ScrabbleBase.Generation.Exception.UnsetTrieException;
-import com.swilkins.ScrabbleBase.Vocabulary.Alphabet;
 import com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie;
 import com.swilkins.ScrabbleBase.Vocabulary.TrieNode;
 
@@ -44,17 +43,14 @@ public class Generator {
   }
 
   private PermutationTrie trie;
+  private TrieNode root;
+  private char delimiter;
+  private Set<Character> alphabet;
   private Integer rackCapacity;
 
   public Generator(PermutationTrie trie, int rackCapacity) throws IllegalArgumentException {
-    if (trie == null) {
-      throw new IllegalArgumentException();
-    }
-    this.trie = trie;
-    if (rackCapacity <= 0) {
-      throw new IllegalArgumentException("Rack capacity must be a positive value.");
-    }
-    this.rackCapacity = rackCapacity;
+    this.setTrie(trie);
+    this.setRackCapacity(rackCapacity);
   }
 
   public Generator() {
@@ -62,11 +58,19 @@ public class Generator {
     this.rackCapacity = null;
   }
 
+  public PermutationTrie getTrie() {
+    return this.trie;
+  }
+
   public void setTrie(PermutationTrie trie) throws IllegalArgumentException {
     if (trie == null) {
       throw new IllegalArgumentException();
     }
-    this.trie = trie;
+    this.delimiter = (this.trie = trie).getDelimiter();
+  }
+
+  public Integer getRackCapacity() {
+    return rackCapacity;
   }
 
   public void setRackCapacity(int rackCapacity) throws IllegalArgumentException {
@@ -104,15 +108,18 @@ public class Generator {
     Set<Coordinates> validHooks = validateInput(rack, board);
     int dimensions = board.length;
 
-    if (rack.size() == 0 || trie.isEmpty()) {
+    if (rack.size() == 0 || this.trie.isEmpty()) {
       return Collections.emptyList();
     }
+
+    this.alphabet = this.trie.getAlphabet();
+    this.root = this.trie.getRoot();
 
     Set<Candidate> all = new HashSet<>();
 
     java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
       for (Direction dir : Direction.primary) {
-        generate(x, y, x, y, rack, new LinkedList<>(), all, trie.getRoot(), dir, board, dimensions);
+        generate(x, y, x, y, rack, new LinkedList<>(), all, this.root, dir, board, dimensions);
       }
     };
 
@@ -138,7 +145,7 @@ public class Generator {
     if (rack == null || board == null) {
       throw new IllegalArgumentException();
     }
-    if (trie == null) {
+    if (this.trie == null) {
       throw new UnsetTrieException();
     }
     if (rackCapacity == null) {
@@ -193,7 +200,7 @@ public class Generator {
       TrieNode crossAnchor;
       if ((next = dir.nextCoordinates(x, y, dimensions)) != null) {
         generate(hX, hY, next.getX(), next.getY(), rack, placed, all, child, dir, board, dimensions);
-      } else if ((crossAnchor = child.getChild(trie.getDelimiter())) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
+      } else if ((crossAnchor = child.getChild(this.delimiter)) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
         generate(hX, hY, next.getX(), next.getY(), rack, placed, all, crossAnchor, inv, board, dimensions);
       }
     };
@@ -227,7 +234,7 @@ public class Generator {
           if (!visited.contains(letter)) {
             visited.add(letter);
             if (letter == Tile.BLANK) {
-              for (char l : Alphabet.letters) {
+              for (char l : this.alphabet) {
                 tryLetterPlacement.accept(l, true);
               }
             } else {
@@ -241,7 +248,7 @@ public class Generator {
 
       TrieNode crossAnchor;
       Coordinates next;
-      if (currentPlacedCount > 0 && (crossAnchor = node.getChild(trie.getDelimiter())) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
+      if (currentPlacedCount > 0 && (crossAnchor = node.getChild(this.delimiter)) != null && (next = inv.nextCoordinates(hX, hY, dimensions)) != null) {
         generate(hX, hY, next.getX(), next.getY(), rack, placed, all, crossAnchor, inv, board, dimensions);
       }
     } else if ((childNode = node.getChild(existingTile.getResolvedLetter())) != null) {
@@ -258,7 +265,7 @@ public class Generator {
     }
     Set<TilePlacement> placements = new HashSet<>();
     Tile tile = toPlace;
-    TrieNode node = trie.getRoot();
+    TrieNode node = this.root;
     int x = sX;
     int y = sY;
     Direction original = dir;
@@ -281,7 +288,7 @@ public class Generator {
         x = next.getX();
         y = next.getY();
         tile = next.getTile();
-        if (tile != null && (node = node.getChild(trie.getDelimiter())) == null) {
+        if (tile != null && (node = node.getChild(this.delimiter)) == null) {
           break;
         }
       }

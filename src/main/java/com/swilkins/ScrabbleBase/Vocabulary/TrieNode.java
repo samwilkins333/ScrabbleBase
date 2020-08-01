@@ -37,23 +37,23 @@ public class TrieNode {
   }
 
   public char getLetter() {
-    return letter;
+    return this.letter;
   }
 
   public TrieNode getParent() {
-    return parent;
+    return this.parent;
   }
 
   public boolean getTerminal() {
-    return isTerminal;
+    return this.isTerminal;
   }
 
   public int getChildCount() {
-    return children.size();
+    return this.children.size();
   }
 
-  public void setTerminal(Boolean terminal) {
-    isTerminal = terminal;
+  public void setTerminal(Boolean isTerminal) {
+    this.isTerminal = isTerminal;
   }
 
 }

@@ -27,18 +27,18 @@ public class PermutationTrie extends Trie {
   }
 
   public char getDelimiter() {
-    return delimiter;
+    return this.delimiter;
   }
 
   interface NodeMutator { boolean mutate(char[] letters); }
 
   @Override
   public boolean addImpl(String s) {
-    if (s.contains(String.valueOf(delimiter))) {
+    if (s.contains(String.valueOf(this.delimiter))) {
       return false;
     }
     boolean result = executeWithPermutations(this::addNodes, s);
-    this.manifestedAlphabet.remove(delimiter);
+    this.alphabet.remove(this.delimiter);
     return result;
   }
 
@@ -56,13 +56,13 @@ public class PermutationTrie extends Trie {
       int currentIndex = count - 1;
       char[] variation = new char[count + 1];
       System.arraycopy(s.substring(1).toCharArray(), 0, variation, 0, currentIndex);
-      variation[currentIndex] = delimiter;
+      variation[currentIndex] = this.delimiter;
       variation[count] = letters[0];
       while (currentIndex > 0) {
         result &= mutator.mutate(variation);
         variation[currentIndex--] = variation[0];
         if (currentIndex >= 0) System.arraycopy(variation, 1, variation, 0, currentIndex);
-        variation[currentIndex] = delimiter;
+        variation[currentIndex] = this.delimiter;
       }
     }
 
