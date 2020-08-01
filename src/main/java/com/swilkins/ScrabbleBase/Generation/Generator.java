@@ -192,7 +192,7 @@ public class Generator {
 
     java.util.function.Consumer<TrieNode> evaluateAndProceed = child -> {
       if (child.getTerminal() && dir.nextTile(x, y, board) == null &&
-              ((dir.equals(Direction.LEFT) || dir.equals(Direction.UP)) || inv.nextTile(hX, hY, board) == null)) {
+              (dir.equals(Direction.LEFT) || dir.equals(Direction.UP) || inv.nextTile(hX, hY, board) == null)) {
           all.add(buildCandidate(board, placed, dir));
       }
       Coordinates next;
