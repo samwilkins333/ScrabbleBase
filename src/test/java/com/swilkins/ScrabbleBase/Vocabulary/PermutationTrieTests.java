@@ -59,15 +59,9 @@ public class PermutationTrieTests {
       BufferedReader reader = new BufferedReader(new FileReader(dictionary.getFile()));
       Set<String> directImport = reader.lines().collect(Collectors.toSet());
       reader.close();
-      int quota = directImport.size();
+      assertNonZeroSize(trie, directImport.size());
       assertTrue(trie.containsAll(directImport));
       assertTrue(directImport.containsAll(trie));
-      assertEquals(quota, trie.toArray().length);
-      assertEquals(quota, trie.size());
-      trie.retainAll(directImport);
-      assertEquals(quota, trie.size());
-      directImport.retainAll(trie);
-      assertEquals(quota, directImport.size());
     } catch (IOException e) {
       Assert.fail(e.getMessage());
     }
