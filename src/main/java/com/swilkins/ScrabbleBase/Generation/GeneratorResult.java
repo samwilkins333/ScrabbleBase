@@ -86,4 +86,5 @@ public class GeneratorResult implements Iterable<Candidate> {
   public Spliterator<Candidate> spliterator() {
     return getCandidateList().spliterator();
   }
+
 }
