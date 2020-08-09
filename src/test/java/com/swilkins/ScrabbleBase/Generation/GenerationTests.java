@@ -42,11 +42,11 @@ public class GenerationTests {
   public void highestScoringRegularOpeningMoveTest() {
     rack.addAllFromLetters("aboride");
 
-    List<Candidate> candidates = generator.compute(rack, board, getDefaultOrdering());
+    GeneratorResult result = generator.compute(rack, board).orderBy(getDefaultOrdering());
 
-    assertEquals(1040, candidates.size());
+    assertEquals(1040, result.size());
 
-    Candidate optimal = candidates.get(0);
+    Candidate optimal = result.get(0);
 
     assertEquals(24, optimal.getScore());
     assertEquals(DirectionName.DOWN, optimal.getDirection());
@@ -68,13 +68,13 @@ public class GenerationTests {
     rack.addAllFromLetters("sordma");
 
     rack.addFromLetter(Tile.BLANK);
-    Candidate computedOptimal = generator.compute(rack, board, getDefaultOrdering()).get(0);
+    Candidate computedOptimal = generator.compute(rack, board).orderBy(getDefaultOrdering()).get(0);
     rack.removeLast();
 
     List<Candidate> collector = new ArrayList<>();
     for (char letter : generator.getTrie().getAlphabet()) {
       rack.add(new Tile(letter, 0, null));
-      collector.add(generator.compute(rack, board, getDefaultOrdering()).get(0));
+      collector.add(generator.compute(rack, board).orderBy(getDefaultOrdering()).get(0));
       rack.removeLast();
     }
     collector.sort(getDefaultOrdering());
@@ -93,13 +93,13 @@ public class GenerationTests {
     rack.addAllFromLetters("tieoat");
 
     rack.addFromLetter(Tile.BLANK);
-    List<Candidate> computedCandidates = generator.compute(rack, board, getDefaultOrdering());
+    GeneratorResult computedCandidates = generator.compute(rack, board).orderBy(getDefaultOrdering());
     rack.removeLast();
 
     List<Candidate> collector = new ArrayList<>();
     for (char letter : generator.getTrie().getAlphabet()) {
       rack.add(new Tile(letter, 0, null));
-      collector.add(generator.compute(rack, board, getDefaultOrdering()).get(0));
+      collector.add(generator.compute(rack, board).orderBy(getDefaultOrdering()).get(0));
       rack.removeLast();
     }
     collector.sort(getDefaultOrdering());
@@ -112,7 +112,7 @@ public class GenerationTests {
             "keto", "totable", "amoretti", "tetanoid", "bootie",
             "patriot", "qat", "teratoid", "toastier", "attrite",
             "outrate", "rotative", "bawtie", "axite", "yett", "baize")
-            .allMatch(w -> computedCandidates.stream().anyMatch(c -> c.getSerialized().get(0).equals(w))));
+            .allMatch(w -> computedCandidates.asStream().anyMatch(c -> c.getSerialized().get(0).equals(w))));
   }
 
   private void compare(Candidate computedOptimal, Candidate collectedOptimal) {
@@ -131,7 +131,7 @@ public class GenerationTests {
   @Test
   public void shouldNotFindAnyCandidates() {
     rack.addAllFromLetters("dczklmn");
-    assertTrue(generator.compute(rack, board, getDefaultOrdering()).isEmpty());
+    assertTrue(generator.compute(rack, board).isEmpty());
   }
 
   @Test
@@ -141,7 +141,7 @@ public class GenerationTests {
 
     rack.addAllFromLetters("fnhorsb");
 
-    List<Candidate> candidates = generator.compute(rack, board, getDefaultOrdering());
+    GeneratorResult candidates = generator.compute(rack, board).orderBy(getDefaultOrdering());
 
     assertEquals(444, candidates.size());
 
@@ -297,7 +297,7 @@ public class GenerationTests {
 
     rack.addAllFromLetters("aenjpbz");
 
-    List<Candidate> candidates = generator.compute(rack, board, getDefaultOrdering());
+    GeneratorResult candidates = generator.compute(rack, board).orderBy(getDefaultOrdering());
 
     assertEquals(330, candidates.size());
 

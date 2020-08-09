@@ -53,6 +53,12 @@ public class Candidate {
     return crosses;
   }
 
+  public Candidate materialize() {
+    this.getPrimary();
+    this.getCrosses();
+    return this;
+  }
+
   public List<String> getSerialized() {
     if (serialized == null) {
       serialized = new ArrayList<>();

@@ -9,9 +9,7 @@ import java.util.LinkedList;
 
 import static com.swilkins.ScrabbleBase.Board.Configuration.STANDARD_RACK_CAPACITY;
 import static com.swilkins.ScrabbleBase.Board.Configuration.getStandardBoard;
-import static com.swilkins.ScrabbleBase.Generation.Generator.getDefaultOrdering;
 
-@SuppressWarnings("ConstantConditions")
 public class GenerationInvalidInputTests {
   private Generator generator;
 
@@ -52,32 +50,32 @@ public class GenerationInvalidInputTests {
   public void unsetTrieGenerationShouldThrow() {
     generator = new Generator();
     generator.setRackCapacity(STANDARD_RACK_CAPACITY);
-    generator.compute(new LinkedList<>(), getStandardBoard(), getDefaultOrdering());
+    generator.compute(new LinkedList<>(), getStandardBoard());
   }
 
   @Test(expected = UnsetRackCapacityException.class)
   public void unsetRackCapacityGenerationShouldThrow() {
     generator = new Generator();
     generator.setTrie(new PermutationTrie());
-    generator.compute(new LinkedList<>(), getStandardBoard(), getDefaultOrdering());
+    generator.compute(new LinkedList<>(), getStandardBoard());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void nullRackReferenceGenerationShouldThrow() {
     generator = new Generator(new PermutationTrie(), STANDARD_RACK_CAPACITY);
-    generator.compute(null, getStandardBoard(), getDefaultOrdering());
+    generator.compute(null, getStandardBoard());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void nullBoardReferenceGenerationShouldThrow() {
     generator = new Generator(new PermutationTrie(), STANDARD_RACK_CAPACITY);
-    generator.compute(new LinkedList<>(), null, getDefaultOrdering());
+    generator.compute(new LinkedList<>(), null);
   }
 
   @Test
   public void nullOrderingReferenceGenerationShouldNotThrow() {
     generator = new Generator(new PermutationTrie(), STANDARD_RACK_CAPACITY);
-    generator.compute(new LinkedList<>(), getStandardBoard(), null);
+    generator.compute(new LinkedList<>(), getStandardBoard());
   }
 
 }

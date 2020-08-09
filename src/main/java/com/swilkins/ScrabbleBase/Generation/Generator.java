@@ -13,6 +13,8 @@ import com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie;
 import com.swilkins.ScrabbleBase.Vocabulary.TrieNode;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static com.swilkins.ScrabbleBase.Board.Configuration.STANDARD_BINGO;
 
@@ -102,41 +104,36 @@ public class Generator {
     };
   }
 
-  public List<Candidate> compute(LinkedList<Tile> rack, BoardSquare[][] board,
-                                 Comparator<Candidate> ordering)
+  public GeneratorResult compute(LinkedList<Tile> rack, BoardSquare[][] board)
           throws IllegalArgumentException, UnsetTrieException, UnsetRackCapacityException {
     Set<Coordinates> validHooks = validateInput(rack, board);
     int dimensions = board.length;
 
     if (rack.size() == 0 || this.trie.isEmpty()) {
-      return Collections.emptyList();
+      return new GeneratorResult();
     }
 
     this.alphabet = this.trie.getAlphabet();
     this.root = this.trie.getRoot();
 
-    Set<Candidate> all = new HashSet<>();
+    Set<Candidate> candidates = new HashSet<>();
 
-    java.util.function.BiConsumer<Integer, Integer> generateAtHook = (x, y) -> {
+    Consumer<Coordinates> generateAtHook = coordinates -> {
+      int x = coordinates.getX();
+      int y = coordinates.getY();
       for (Direction dir : Direction.primary) {
-        generate(x, y, x, y, rack, new LinkedList<>(), all, this.root, dir, board, dimensions);
+        generate(x, y, x, y, rack, new LinkedList<>(), candidates, this.root, dir, board, dimensions);
       }
     };
 
     if (validHooks.isEmpty()) {
       int midpoint = dimensions / 2;
-      generateAtHook.accept(midpoint, midpoint);
+      generateAtHook.accept(new Coordinates(midpoint, midpoint));
     } else {
-      for (Coordinates hook : validHooks) {
-        generateAtHook.accept(hook.getX(), hook.getY());
-      }
+      validHooks.forEach(generateAtHook);
     }
 
-    List<Candidate> candidates = new ArrayList<>(all);
-    if (ordering != null) {
-      candidates.sort(ordering);
-    }
-    return candidates;
+    return new GeneratorResult(candidates);
   }
 
   private Set<Coordinates> validateInput(LinkedList<Tile> rack, BoardSquare[][] board)
@@ -190,7 +187,7 @@ public class Generator {
     Direction inv = dir.inverse();
     TrieNode childNode;
 
-    java.util.function.Consumer<TrieNode> evaluateAndProceed = child -> {
+    Consumer<TrieNode> evaluateAndProceed = child -> {
       if (child.getTerminal() && dir.nextTile(x, y, board) == null &&
               (dir.equals(Direction.LEFT) || dir.equals(Direction.UP) || inv.nextTile(hX, hY, board) == null)) {
           all.add(buildCandidate(board, placed, dir));
@@ -214,7 +211,7 @@ public class Generator {
         for (int r = 0; r < rackCount; r++) {
           Tile toPlace = rack.removeFirst();
 
-          java.util.function.BiConsumer<Character, Boolean> tryLetterPlacement = (letter, isBlank) -> {
+          BiConsumer<Character, Boolean> tryLetterPlacement = (letter, isBlank) -> {
             Tile resolvedTile = isBlank ? new Tile(toPlace.getLetter(), toPlace.getValue(), letter) : toPlace;
             TrieNode child;
             Set<TilePlacement> cross;

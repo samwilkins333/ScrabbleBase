@@ -31,7 +31,7 @@ public class PermutationTrie extends Trie {
   }
 
   interface NodeMutator {
-    boolean mutate(char[] letters);
+    boolean accept(char[] letters);
   }
 
   @Override
@@ -51,7 +51,7 @@ public class PermutationTrie extends Trie {
 
   private boolean executeWithPermutations(NodeMutator mutator, String s) {
     char[] letters = s.toCharArray();
-    boolean result = mutator.mutate(letters);
+    boolean result = mutator.accept(letters);
 
     int count = letters.length;
     if (count > 1) {
@@ -61,7 +61,7 @@ public class PermutationTrie extends Trie {
       variation[currentIndex] = this.delimiter;
       variation[count] = letters[0];
       while (currentIndex > 0) {
-        result &= mutator.mutate(variation);
+        result &= mutator.accept(variation);
         variation[currentIndex--] = variation[0];
         if (currentIndex >= 0) System.arraycopy(variation, 1, variation, 0, currentIndex);
         variation[currentIndex] = this.delimiter;

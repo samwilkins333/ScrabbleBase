@@ -72,6 +72,7 @@ public class PermutationTrieTests {
     assertTrue(trie.loadFrom(dictionary, String::trim));
     assertFalse(trie.contains(""));
     assertFalse(trie.contains("alsdkbhb"));
+    assertFalse(trie.contains("caree"));
   }
 
   @Test
