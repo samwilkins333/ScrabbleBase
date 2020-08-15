@@ -1,6 +1,7 @@
 package com.swilkins.ScrabbleBase.Generation;
 
 import com.google.common.collect.Lists;
+import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -45,6 +46,10 @@ public class GeneratorResult implements Iterable<Candidate> {
       this.getCandidateList().sort(ordering);
     }
     return this;
+  }
+
+  public List<List<TilePlacement>> asNewPlacements() {
+    return this.asStream().map(Candidate::getPrimary).collect(Collectors.toList());
   }
 
   public Set<Candidate> asSet() {
