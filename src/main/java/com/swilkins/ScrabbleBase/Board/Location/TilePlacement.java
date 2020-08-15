@@ -1,5 +1,6 @@
 package com.swilkins.ScrabbleBase.Board.Location;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
 
 import java.util.Objects;
@@ -9,6 +10,7 @@ public class TilePlacement {
   private final int x;
   private final int y;
   private final Tile tile;
+  @JsonIgnore
   private boolean isExisting = false;
 
   public TilePlacement(int x, int y, Tile tile) {
@@ -36,7 +38,7 @@ public class TilePlacement {
     return tile;
   }
 
-  public boolean isExisting() {
+  public boolean getIsExisting() {
     return isExisting;
   }
 

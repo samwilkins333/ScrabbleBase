@@ -120,7 +120,7 @@ public class Candidate {
       }
       word.append(resolved);
       String placementString = String.format("%s", resolved);
-      if (!p.isExisting()) {
+      if (!p.getIsExisting()) {
         placementString = String.format("%s(%s, %s)", placementString, p.getX(), p.getY());
       }
       locations.add(placementString);

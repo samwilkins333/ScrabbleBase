@@ -243,7 +243,7 @@ public class GenerationTests {
           if (placement.getTile().getResolvedLetter() != expectedWord[i].charAt(p)) {
             break;
           }
-          if (placement.isExisting() != expectedIsExisting[i][p]) {
+          if (placement.getIsExisting() != expectedIsExisting[i][p]) {
             break;
           }
         }
@@ -326,7 +326,7 @@ public class GenerationTests {
         if (placement.getTile().getResolvedLetter() != expectedWord.charAt(p)) {
           break;
         }
-        if (placement.isExisting() != expectedIsExisting[p]) {
+        if (placement.getIsExisting() != expectedIsExisting[p]) {
           break;
         }
       }

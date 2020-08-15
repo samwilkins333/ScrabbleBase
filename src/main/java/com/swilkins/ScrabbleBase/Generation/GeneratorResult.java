@@ -49,31 +49,40 @@ public class GeneratorResult implements Iterable<Candidate> {
     return this;
   }
 
-  public List<List<TilePlacement>> asNewPlacements() {
-    return this.asStream().map(candidate -> candidate.getPrimary()
+  public List<Object> asNewPlacementsList(Integer pageSize) {
+    List<List<TilePlacement>> filtered = this.asStream().map(candidate -> candidate.getPrimary()
             .stream()
-            .filter(Predicate.not(TilePlacement::isExisting))
+            .filter(Predicate.not(TilePlacement::getIsExisting))
             .collect(Collectors.toList())).collect(Collectors.toList());
+    List<Object> resolved = new ArrayList<>(this.size());
+    resolved.addAll(pageSize == null ?
+            filtered :
+            Lists.partition(filtered, pageSize)
+    );
+    return resolved;
   }
 
   public Set<Candidate> asSet() {
     return this.candidateSet;
   }
 
-  public List<Candidate> asFlatList() {
-    return getCandidateList();
+  public List<Object> asCandidateList(Integer pageSize) {
+    List<Object> resolved = new ArrayList<>(this.size());
+    resolved.addAll(pageSize == null ?
+            getCandidateList() :
+            Lists.partition(getCandidateList(), pageSize)
+    );
+    return resolved;
   }
 
-  public List<String> asFlatSerializedList() {
-    return this.asStream().map(Candidate::toString).collect(Collectors.toList());
-  }
-
-  public List<List<Candidate>> asPagedList(int pageSize) {
-    return Lists.partition(this.asFlatList(), pageSize);
-  }
-
-  public List<List<String>> asPagedSerializedList(int pageSize) {
-    return Lists.partition(this.asFlatSerializedList(), pageSize);
+  public List<Object> asSerializedList(Integer pageSize) {
+    List<String> serialized = this.asStream().map(Candidate::toString).collect(Collectors.toList());
+    List<Object> resolved = new ArrayList<>(this.size());
+    resolved.addAll(pageSize == null ?
+            serialized :
+            Lists.partition(serialized, pageSize)
+    );
+    return resolved;
   }
 
   public Stream<Candidate> asStream() {
