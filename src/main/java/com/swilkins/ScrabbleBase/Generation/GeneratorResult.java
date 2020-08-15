@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,7 +50,10 @@ public class GeneratorResult implements Iterable<Candidate> {
   }
 
   public List<List<TilePlacement>> asNewPlacements() {
-    return this.asStream().map(Candidate::getPrimary).collect(Collectors.toList());
+    return this.asStream().map(candidate -> candidate.getPrimary()
+            .stream()
+            .filter(Predicate.not(TilePlacement::isExisting))
+            .collect(Collectors.toList())).collect(Collectors.toList());
   }
 
   public Set<Candidate> asSet() {

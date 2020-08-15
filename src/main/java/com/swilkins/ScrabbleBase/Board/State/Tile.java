@@ -1,11 +1,16 @@
 package com.swilkins.ScrabbleBase.Board.State;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.Objects;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 public class Tile {
 
   private final char letter;
   private final int value;
+  @JsonInclude(NON_NULL)
   private Character letterProxy;
   public static final char BLANK = '*';
 
