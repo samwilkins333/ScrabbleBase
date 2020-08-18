@@ -109,28 +109,26 @@ public class Generator {
     Set<Coordinates> validHooks = validateInput(rack, board);
     int dimensions = board.length;
 
-    if (rack.size() == 0 || this.trie.isEmpty()) {
-      return new GeneratorResult();
-    }
-
-    this.alphabet = this.trie.getAlphabet();
-    this.root = this.trie.getRoot();
-
     Set<Candidate> candidates = new HashSet<>();
 
-    Consumer<Coordinates> generateAtHook = coordinates -> {
-      int x = coordinates.getX();
-      int y = coordinates.getY();
-      for (Direction dir : Direction.primary) {
-        generate(x, y, x, y, rack, new LinkedList<>(), candidates, this.root, dir, board, dimensions);
-      }
-    };
+    if (!rack.isEmpty() && !this.trie.isEmpty()) {
+      this.alphabet = this.trie.getAlphabet();
+      this.root = this.trie.getRoot();
 
-    if (validHooks.isEmpty()) {
-      int midpoint = dimensions / 2;
-      generateAtHook.accept(new Coordinates(midpoint, midpoint));
-    } else {
-      validHooks.forEach(generateAtHook);
+      Consumer<Coordinates> generateAtHook = coordinates -> {
+        int x = coordinates.getX();
+        int y = coordinates.getY();
+        for (Direction dir : Direction.primary) {
+          generate(x, y, x, y, rack, new LinkedList<>(), candidates, this.root, dir, board, dimensions);
+        }
+      };
+
+      if (validHooks.isEmpty()) {
+        int midpoint = dimensions / 2;
+        generateAtHook.accept(new Coordinates(midpoint, midpoint));
+      } else {
+        validHooks.forEach(generateAtHook);
+      }
     }
 
     return new GeneratorResult(candidates);
