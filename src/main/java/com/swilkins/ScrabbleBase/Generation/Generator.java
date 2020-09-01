@@ -5,10 +5,7 @@ import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import com.swilkins.ScrabbleBase.Board.State.BoardSquare;
 import com.swilkins.ScrabbleBase.Board.State.Multiplier;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
-import com.swilkins.ScrabbleBase.Generation.Exception.InvalidBoardStateException;
-import com.swilkins.ScrabbleBase.Generation.Exception.InvalidRackLengthException;
-import com.swilkins.ScrabbleBase.Generation.Exception.UnsetRackCapacityException;
-import com.swilkins.ScrabbleBase.Generation.Exception.UnsetTrieException;
+import com.swilkins.ScrabbleBase.Generation.Exception.*;
 import com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie;
 import com.swilkins.ScrabbleBase.Vocabulary.TrieNode;
 
@@ -19,51 +16,62 @@ import java.util.function.Consumer;
 import static com.swilkins.ScrabbleBase.Board.Configuration.STANDARD_BINGO;
 
 /**
- * Contains logic for exhaustive move generation
- * given game context.
+ * Represents an entity capable of generating an exhaustive list of
+ * candidate plays (represented for utility by a <code>GeneratorResult</code>
+ * instance) given rack state, board state and vocabulary (trie) state.
+ * It supports the use of blank tiles.
  */
 public class Generator {
 
-  private static class CrossedTilePlacement {
-
-    private final TilePlacement root;
-    private final Set<TilePlacement> cross;
-
-    public CrossedTilePlacement(TilePlacement root, Set<TilePlacement> cross) {
-      this.root = root;
-      this.cross = cross;
-    }
-
-    public TilePlacement getRoot() {
-      return root;
-    }
-
-    public Set<TilePlacement> getCross() {
-      return cross;
-    }
-
-  }
-
+  // The specialized data structure used to store the vocabulary
   private PermutationTrie trie;
+  // The root of the trie representing the vocabulary. All word traversals start here.
   private TrieNode root;
+  // The delimiter used to denote a direction inversion in the PermutationTrie
   private char delimiter;
+  // A direct result of the trie's contents, not necessarily just [a-z]
   private Set<Character> alphabet;
+  // Value used to determine when a candidate exhausts the rack and thus invokes the bonus score, or 'bingo'
   private Integer rackCapacity;
 
+  /**
+   * If the caller has references to both the <code>PermutationTrie</code> representing
+   * the vocabulary and the magnitude of the rack capacity, this constructor should be used.
+   *
+   * @param trie the permutation trie instance to be used in candidate generation
+   * @param rackCapacity the number of tiles in a full rack
+   * @throws IllegalArgumentException if the trie reference is {@code null}, or the rack capacity is not
+   * a positive number
+   */
   public Generator(PermutationTrie trie, int rackCapacity) throws IllegalArgumentException {
     this.setTrie(trie);
     this.setRackCapacity(rackCapacity);
   }
 
+  /**
+   * If the caller does not have references to both the <code>PermutationTrie</code> representing
+   * the vocabulary and the magnitude of the rack capacity, this constructor should be used.
+   * Then, these two properties can be later set by invoking the appropriate setter.
+   */
   public Generator() {
     this.trie = null;
     this.rackCapacity = null;
   }
 
-  public PermutationTrie getTrie() {
+  /**
+   * @return the permutation trie instance to be used in candidate generation
+   */
+  public PermutationTrie getPermutationTrie() {
     return this.trie;
   }
 
+  /**
+   * Directs this <code>Generator</code> to use the given instance of
+   * <code>PermutationTrie</code> in candidate generation.
+   *
+   * @param trie the permutation trie instance to be used in candidate generation
+   * @throws IllegalArgumentException if the trie reference is {@code null}
+   */
   public void setTrie(PermutationTrie trie) throws IllegalArgumentException {
     if (trie == null) {
       throw new IllegalArgumentException();
@@ -84,10 +92,12 @@ public class Generator {
 
   public static Comparator<Candidate> getDefaultOrdering() {
     return (one, two) -> {
+      // First, order by score
       int scoreDiff = two.getScore() - one.getScore();
       if (scoreDiff != 0) {
         return scoreDiff;
       }
+      // Break ties by ordering lexicographically
       StringBuilder oneSerialized = new StringBuilder();
       for (TilePlacement placement : one.getPrimary()) {
         oneSerialized.append(placement.getTile().getResolvedLetter());
@@ -100,6 +110,7 @@ public class Generator {
       if (serializedDiff != 0) {
         return serializedDiff;
       }
+      // If the same word appears in multiple places, divide into clusters of the same orientation
       return one.getDirection().name().compareTo(two.getDirection().name());
     };
   }
@@ -109,11 +120,12 @@ public class Generator {
     Set<Coordinates> validHooks = validateInput(rack, board);
     int dimensions = board.length;
 
+    this.alphabet = this.trie.getAlphabet();
+    this.root = this.trie.getRoot();
+
     Set<Candidate> candidates = new HashSet<>();
 
     if (!rack.isEmpty() && !this.trie.isEmpty()) {
-      this.alphabet = this.trie.getAlphabet();
-      this.root = this.trie.getRoot();
 
       Consumer<Coordinates> generateAtHook = coordinates -> {
         int x = coordinates.getX();

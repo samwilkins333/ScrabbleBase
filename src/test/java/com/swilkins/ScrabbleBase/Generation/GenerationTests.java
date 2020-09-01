@@ -72,7 +72,7 @@ public class GenerationTests {
     rack.removeLast();
 
     List<Candidate> collector = new ArrayList<>();
-    for (char letter : generator.getTrie().getAlphabet()) {
+    for (char letter : generator.getPermutationTrie().getAlphabet()) {
       rack.add(new Tile(letter, 0, null));
       collector.add(generator.compute(rack, board).orderBy(getDefaultOrdering()).get(0));
       rack.removeLast();
@@ -97,7 +97,7 @@ public class GenerationTests {
     rack.removeLast();
 
     List<Candidate> collector = new ArrayList<>();
-    for (char letter : generator.getTrie().getAlphabet()) {
+    for (char letter : generator.getPermutationTrie().getAlphabet()) {
       rack.add(new Tile(letter, 0, null));
       collector.add(generator.compute(rack, board).orderBy(getDefaultOrdering()).get(0));
       rack.removeLast();
