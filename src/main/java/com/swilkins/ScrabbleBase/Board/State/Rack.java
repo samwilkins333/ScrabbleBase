@@ -36,4 +36,8 @@ public class Rack extends LinkedList<Tile> {
     }
   }
 
+  public boolean isFull() {
+    return capacity == size();
+  }
+
 }
