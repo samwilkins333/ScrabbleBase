@@ -5,7 +5,10 @@ import com.swilkins.ScrabbleBase.Board.Location.TilePlacement;
 import com.swilkins.ScrabbleBase.Board.State.BoardSquare;
 import com.swilkins.ScrabbleBase.Board.State.Multiplier;
 import com.swilkins.ScrabbleBase.Board.State.Tile;
-import com.swilkins.ScrabbleBase.Generation.Exception.*;
+import com.swilkins.ScrabbleBase.Generation.Exception.InvalidBoardStateException;
+import com.swilkins.ScrabbleBase.Generation.Exception.InvalidRackLengthException;
+import com.swilkins.ScrabbleBase.Generation.Exception.UnsetRackCapacityException;
+import com.swilkins.ScrabbleBase.Generation.Exception.UnsetTrieException;
 import com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie;
 import com.swilkins.ScrabbleBase.Vocabulary.TrieNode;
 
@@ -38,10 +41,10 @@ public class Generator {
    * If the caller has references to both the <code>PermutationTrie</code> representing
    * the vocabulary and the magnitude of the rack capacity, this constructor should be used.
    *
-   * @param trie the permutation trie instance to be used in candidate generation
+   * @param trie         the permutation trie instance to be used in candidate generation
    * @param rackCapacity the number of tiles in a full rack
    * @throws IllegalArgumentException if the trie reference is {@code null}, or the rack capacity is not
-   * a positive number
+   *                                  a positive number
    */
   public Generator(PermutationTrie trie, int rackCapacity) throws IllegalArgumentException {
     this.setTrie(trie);

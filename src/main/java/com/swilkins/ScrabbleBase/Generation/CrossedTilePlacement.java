@@ -10,11 +10,11 @@ import java.util.Set;
  * word along with the placed tile in an instance of this utility class. Since <code>generate()</code>
  * maintains a list of these enriched tile placements, it does not need to recompute cross words when
  * building a <code>Candidate</code> instance. Consider the following, where [Y] indicates a new placement:
- *
- *          T
- *          R
+ * <p>
+ * T
+ * R
  * F I S H [Y]
- *
+ * <p>
  * The <code>CrossedTilePlacement</code> that represents this placement is given by a single <code>TilePlacement</code>
  * for [Y] (representing the newly placed tile, or root), as well as a set of three <code>TilePlacement</code>s,
  * one for each of T, R and Y (representing the entire cross word formed by the new placement, including the new
