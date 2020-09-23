@@ -13,8 +13,13 @@ import com.swilkins.ScrabbleBase.Vocabulary.PermutationTrie;
 import com.swilkins.ScrabbleBase.Vocabulary.TrieNode;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.swilkins.ScrabbleBase.Board.Configuration.STANDARD_BINGO;
 
@@ -126,27 +131,40 @@ public class Generator {
     this.alphabet = this.trie.getAlphabet();
     this.root = this.trie.getRoot();
 
-    Set<Candidate> candidates = new HashSet<>();
+    Set<Candidate> global = new HashSet<>();
 
     if (!rack.isEmpty() && !this.trie.isEmpty()) {
-
-      Consumer<Coordinates> generateAtHook = coordinates -> {
+      Function<Coordinates, Set<Candidate>> generateAtHook = coordinates -> {
         int x = coordinates.getX();
         int y = coordinates.getY();
+        Set<Candidate> candidates = new HashSet<>();
         for (Direction dir : Direction.primary) {
-          generate(x, y, x, y, rack, new LinkedList<>(), candidates, this.root, dir, board, dimensions);
+          generate(x, y, x, y, new LinkedList<>(rack), new LinkedList<>(), candidates, this.root, dir, board, dimensions);
         }
+        return candidates;
       };
-
       if (validHooks.isEmpty()) {
         int midpoint = dimensions / 2;
-        generateAtHook.accept(new Coordinates(midpoint, midpoint));
+        global = generateAtHook.apply(new Coordinates(midpoint, midpoint));
       } else {
-        validHooks.forEach(generateAtHook);
+        try {
+          ExecutorService executorService = Executors.newCachedThreadPool();
+          List<Future<Set<Candidate>>> pending = new ArrayList<>();
+          for (Coordinates coordinates : validHooks) {
+            pending.add(executorService.submit(() -> generateAtHook.apply(coordinates)));
+          }
+          for (Future<?> future : pending) {
+            for (Object candidate : (Set<?>) future.get()) {
+              global.add((Candidate) candidate);
+            }
+          }
+        } catch (InterruptedException | ExecutionException e) {
+          e.printStackTrace();
+        }
       }
     }
 
-    return new GeneratorResult(candidates);
+    return new GeneratorResult(global);
   }
 
   private Set<Coordinates> validateInput(LinkedList<Tile> rack, BoardSquare[][] board)
